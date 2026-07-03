@@ -1,0 +1,102 @@
+/* ==========================================================================
+   Efficient Technologies — Design Tokens
+   Brand direction: Precision · Bold Technical
+   Single source of truth for color, type, spacing, radius, motion.
+   Consume these variables everywhere; never hardcode brand hex in components.
+   ========================================================================== */
+
+:root {
+  /* ---- Core surfaces (dark, the primary brand canvas) ------------------- */
+  --et-void:        #05070D;   /* page background, darkest */
+  --et-ink:         #0A1220;   /* elevated background */
+  --et-panel:       #0C1424;   /* cards, panels, code blocks */
+  --et-line:        #16233B;   /* hairline borders / grid on dark */
+  --et-line-strong: #284067;   /* stronger border / ghost-button outline */
+
+  /* ---- Text on dark ----------------------------------------------------- */
+  --et-white:       #FFFFFF;   /* primary text / headlines */
+  --et-mist:        #C7D3E6;   /* secondary text */
+  --et-slate:       #8FA3C2;   /* muted text, mono labels */
+  --et-slate-dim:   #5B6E8C;   /* faint mono / metadata */
+
+  /* ---- Accents ---------------------------------------------------------- */
+  --et-blue:        #3D7BFF;   /* primary action, links, focus */
+  --et-blue-hover:  #2A5FE0;   /* pressed / hover */
+  --et-blue-bg:     #12224A;   /* tinted blue surface on dark */
+  --et-lime:        #B8F24A;   /* live signal, success, highlight numbers */
+  --et-lime-hover:  #A6E035;
+  --et-lime-text:   #6F9E14;   /* lime as text on LIGHT surfaces (contrast-safe) */
+
+  /* ---- Light surfaces (for light sections / documents) ------------------ */
+  --et-cloud:       #EEF3FA;
+  --et-cloud-2:     #E2E8F0;
+  --et-ink-on-light:#0A1220;   /* body text on light */
+  --et-slate-on-light:#4A5B75;
+
+  /* ---- Semantic roles --------------------------------------------------- */
+  --et-bg:          var(--et-void);
+  --et-fg:          var(--et-white);
+  --et-accent:      var(--et-blue);
+  --et-signal:      var(--et-lime);
+  --et-focus-ring:  0 0 0 2px var(--et-void), 0 0 0 4px var(--et-blue);
+
+  /* ---- Typography ------------------------------------------------------- */
+  --et-font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --et-font-serif:   'Fraunces', 'Times New Roman', Georgia, serif; /* editorial display accent */
+  --et-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --et-font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Type scale (rem @ 16px base) */
+  --et-fs-display-xl: 3.5rem;   /* 56 — hero */
+  --et-fs-display:    2.75rem;  /* 44 — section hero */
+  --et-fs-h1:         2rem;     /* 32 */
+  --et-fs-h2:         1.5rem;   /* 24 */
+  --et-fs-h3:         1.25rem;  /* 20 */
+  --et-fs-body-lg:    1.125rem; /* 18 */
+  --et-fs-body:       1rem;     /* 16 */
+  --et-fs-sm:         0.875rem; /* 14 */
+  --et-fs-label:      0.6875rem;/* 11 — mono eyebrow labels */
+
+  --et-weight-regular: 400;
+  --et-weight-medium:  500;
+  --et-weight-bold:    700;
+
+  --et-lh-tight:  1.1;   /* display */
+  --et-lh-snug:   1.3;   /* headings */
+  --et-lh-body:   1.6;   /* body copy */
+  --et-tracking-display: -0.02em; /* tight, technical */
+  --et-tracking-label:   0.16em;  /* wide mono labels */
+
+  /* ---- Spacing scale (4px base) ----------------------------------------- */
+  --et-space-1: 0.25rem;  /* 4  */
+  --et-space-2: 0.5rem;   /* 8  */
+  --et-space-3: 0.75rem;  /* 12 */
+  --et-space-4: 1rem;     /* 16 */
+  --et-space-5: 1.5rem;   /* 24 */
+  --et-space-6: 2rem;     /* 32 */
+  --et-space-7: 3rem;     /* 48 */
+  --et-space-8: 4rem;     /* 64 */
+  --et-space-9: 6rem;     /* 96 */
+
+  /* ---- Radius ----------------------------------------------------------- */
+  --et-radius-sm:   6px;
+  --et-radius:      8px;
+  --et-radius-lg:   12px;
+  --et-radius-pill: 999px;
+
+  /* ---- Layout ----------------------------------------------------------- */
+  --et-container:   1120px;
+  --et-gutter:      var(--et-space-5);
+
+  /* ---- Motion ----------------------------------------------------------- */
+  --et-ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --et-dur-fast:  120ms;
+  --et-dur:       200ms;
+  --et-dur-slow:  400ms;
+}
+
+/* Light-section helper: apply .et-on-light to flip text roles on cloud bg */
+.et-on-light {
+  --et-fg:   var(--et-ink-on-light);
+  --et-mist: var(--et-slate-on-light);
+}

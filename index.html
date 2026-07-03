@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Efficient Technologies — Find the gaps. Automate them.</title>
+<meta name="description" content="Efficient Technologies builds automation for local businesses — booking, follow-up, CRM, and the workflows in between. Audited, built, and live in days.">
+<link rel="icon" type="image/svg+xml" href="assets/logo/favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Efficient Technologies — Find the gaps. Automate them.">
+<meta property="og:description" content="Automation for local businesses. We audit the systems you're missing, then build them. Live in days.">
+<meta property="og:image" content="PLACEHOLDER_DOMAIN/assets/og.png">
+<meta property="og:url" content="PLACEHOLDER_DOMAIN">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="PLACEHOLDER_DOMAIN">
+
+<script>document.documentElement.className="js";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="preloader" class="preloader" aria-hidden="true">
+  <div class="pre-center">
+    <svg class="pre-mark" width="72" height="72" viewBox="0 0 64 64">
+      <rect x="1" y="1" width="62" height="62" rx="14" fill="none" stroke="#16233B" stroke-width="1"/>
+      <path class="pre-chev" d="M20 22 L31 32 L20 42" fill="none" stroke="#3D7BFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect class="pre-cur" x="34" y="37.5" width="14" height="5" rx="2.5" fill="#B8F24A"/>
+    </svg>
+    <div class="pre-label">initializing systems</div>
+  </div>
+  <div class="pre-count"><span id="pre-count-n">0</span></div>
+</div>
+
+<div id="cursor" class="cursor" aria-hidden="true"></div>
+<div id="cursor-ring" class="cursor-ring" aria-hidden="true"></div>
+
+<header id="nav" class="nav">
+  <div class="nav-inner container">
+    <a class="nav-logo" href="#top" data-cursor aria-label="Efficient Technologies home">
+      <img src="assets/logo/lockup-reversed.svg" alt="Efficient Technologies" height="28">
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#automate" data-cursor>What we automate</a>
+      <a href="#how" data-cursor>How it works</a>
+      <a href="#pricing" data-cursor>Pricing</a>
+      <a class="btn btn-primary btn-sm magnetic" data-cursor href="#book">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section id="hero" class="hero">
+    <canvas id="hero-canvas" class="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <span class="side-label side-left" aria-hidden="true">Efficient Technologies — automation studio</span>
+    <div class="hero-content container">
+      <p class="eyebrow" data-reveal><span class="live-dot"></span> system online &nbsp;//&nbsp; automation for local business</p>
+      <h1 class="hero-title">
+        <span class="rise"><em class="serif">Find the gaps.</em></span>
+        <span class="rise">Automate them<span class="dot-blue">.</span></span>
+      </h1>
+      <p class="hero-sub" data-reveal>We audit how your business runs, find the systems you're missing — booking, follow-up, CRM — and build them. Live in days, not months.</p>
+      <div class="hero-cta" data-reveal>
+        <a class="btn btn-primary magnetic" data-cursor href="#book">Book a call</a>
+        <a class="btn btn-ghost" data-cursor href="#automate">See what we automate</a>
+      </div>
+      <div class="terminal" data-reveal role="img" aria-label="Example automation audit and deploy log">
+        <div class="terminal-bar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="tlabel">example — audit</span></div>
+        <div id="term-lines" class="terminal-body"></div>
+      </div>
+    </div>
+    <a href="#core" class="scroll-cue" data-cursor aria-label="Scroll down">scroll to explore</a>
+  </section>
+
+  <section id="core" class="core">
+    <canvas id="core-canvas" class="core-canvas" aria-hidden="true"></canvas>
+    <div class="core-labels" aria-hidden="true">
+      <span class="mono-label">// the difference</span>
+      <span class="mono-label core-index"><span id="core-pct">00</span> / 100</span>
+    </div>
+    <div class="core-copy">
+      <p class="core-line" data-core="0">Most businesses run on <em class="serif">manual work.</em></p>
+      <p class="core-line" data-core="1">The best ones run on <em class="serif">systems.</em></p>
+      <p class="core-line core-small" data-core="2">We build the systems.</p>
+    </div>
+  </section>
+
+  <section id="gaps" class="section">
+    <div class="container">
+      <p class="eyebrow" data-reveal>// 01 — the gaps</p>
+      <h2 class="section-title" data-rise>Where local businesses <em class="serif">leak time and leads</em></h2>
+      <p class="section-lead" data-reveal>Most of it is invisible — small manual steps that quietly cost bookings, follow-ups, and repeat customers.</p>
+      <div class="cards-5" data-reveal-group>
+        <div class="card gap" data-cursor><span class="gap-tag">after&nbsp;hours</span><h3>No online booking</h3><p>Calls go to voicemail. Bookings die the moment you close.</p></div>
+        <div class="card gap" data-cursor><span class="gap-tag">&minus;80% cold</span><h3>Slow follow-up</h3><p>Leads go cold in hours. Most never get a second touch.</p></div>
+        <div class="card gap" data-cursor><span class="gap-tag">untracked</span><h3>No CRM</h3><p>Contacts live in a phone and a notebook. Nothing is tracked.</p></div>
+        <div class="card gap" data-cursor><span class="gap-tag">unanswered</span><h3>Dead reviews</h3><p>Negative reviews sit for weeks. New ones never get asked for.</p></div>
+        <div class="card gap" data-cursor><span class="gap-tag">no trace</span><h3>No lead capture</h3><p>Site visitors leave and you have no way to reach them again.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="automate" class="section section-alt">
+    <div class="container">
+      <p class="eyebrow" data-reveal>// 02 — what we automate</p>
+      <h2 class="section-title" data-rise>Systems that <em class="serif">run without you</em></h2>
+      <div class="cards-3" data-reveal-group>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#9634;</div><h3>Booking &amp; scheduling</h3><p>Online booking, reminders, and automatic no-show follow-up.</p></div>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#8631;</div><h3>Follow-up sequences</h3><p>Instant replies, multi-touch nurture, and win-back campaigns.</p></div>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#9707;</div><h3>Lightweight CRM</h3><p>Every lead captured, tagged, and tracked — no spreadsheets.</p></div>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#9733;</div><h3>Review engine</h3><p>Auto-ask happy customers, and get alerted the moment one goes negative.</p></div>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#8703;</div><h3>Workflow glue</h3><p>Connect the tools you already use and kill the manual steps between them.</p></div>
+        <div class="card svc" data-cursor><div class="svc-ico" aria-hidden="true">&#9673;</div><h3>Custom builds</h3><p>Anything repetitive in your business — scoped, built, and shipped.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="how">
+    <div class="how-head container">
+      <p class="eyebrow" data-reveal>// 03 — how it works</p>
+      <h2 class="section-title" data-rise>Audited, built, and <em class="serif">live in days</em></h2>
+    </div>
+    <div class="how-viewport">
+      <div id="process-track" class="process-track">
+        <article class="step" data-cursor><span class="step-n">01</span><h3>Audit</h3><p>We scan your business for automation gaps and score each one by what it costs you.</p></article>
+        <article class="step" data-cursor><span class="step-n">02</span><h3>Plan</h3><p>You get a fixed scope and a fixed price. Nothing gets built until you approve it.</p></article>
+        <article class="step" data-cursor><span class="step-n">03</span><h3>Build</h3><p>We build the systems on the tools you already run. No rip-and-replace.</p></article>
+        <article class="step" data-cursor><span class="step-n">04</span><h3>Deploy</h3><p>Live, tested, and documented — usually inside a week.</p></article>
+        <article class="step" data-cursor><span class="step-n">05</span><h3>Support</h3><p>We monitor and tune what we ship. Kill switch anytime, no lock-in.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="proof" class="section">
+    <div class="container">
+      <p class="eyebrow" data-reveal>// 04 — how we work</p>
+      <h2 class="section-title" data-rise>Built to <em class="serif">earn trust</em>, not lock you in</h2>
+      <div class="stats" data-reveal-group>
+        <div class="stat"><div class="stat-num"><span data-count="7" data-suffix="+">0</span></div><div class="stat-label">automation gaps we audit for</div></div>
+        <div class="stat"><div class="stat-num"><span data-count="72" data-suffix="h">0</span></div><div class="stat-label">typical time to live</div></div>
+        <div class="stat"><div class="stat-num"><span data-count="100" data-suffix="%">0</span></div><div class="stat-label">you approve before we build</div></div>
+        <div class="stat"><div class="stat-num"><span data-count="0">0</span></div><div class="stat-label">long contracts or lock-in</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section section-alt">
+    <div class="container">
+      <p class="eyebrow" data-reveal>// 05 — packages</p>
+      <h2 class="section-title" data-rise>Productized, <em class="serif">fixed-price</em> to start</h2>
+      <p class="section-lead" data-reveal>Start with one system, or hand us the whole stack. Prices below are placeholders — set your own.</p>
+      <div class="pricing" data-reveal-group>
+        <div class="card price" data-cursor>
+          <h3>Launch</h3>
+          <div class="price-tag">$<span>PLACEHOLDER</span></div>
+          <p class="price-sub">One system, fixed price.</p>
+          <ul><li>Booking or follow-up automation</li><li>Set up on your tools</li><li>Live in days</li><li>2 weeks of tuning</li></ul>
+          <a class="btn btn-ghost" data-cursor href="#book">Start here</a>
+        </div>
+        <div class="card price featured" data-cursor>
+          <span class="price-badge">Most popular</span>
+          <h3>Growth</h3>
+          <div class="price-tag">$<span>PLACEHOLDER</span></div>
+          <p class="price-sub">The core stack, done.</p>
+          <ul><li>Booking + follow-up + CRM</li><li>Review engine</li><li>Lead capture + routing</li><li>30 days of tuning</li></ul>
+          <a class="btn btn-primary magnetic" data-cursor href="#book">Book a call</a>
+        </div>
+        <div class="card price" data-cursor>
+          <h3>Systems</h3>
+          <div class="price-tag">Custom</div>
+          <p class="price-sub">Full custom automation.</p>
+          <ul><li>End-to-end workflow builds</li><li>Ongoing monitoring</li><li>Priority support</li><li>Monthly care plan</li></ul>
+          <a class="btn btn-ghost" data-cursor href="#book">Talk to us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="book" class="section book">
+    <div class="container book-inner">
+      <p class="eyebrow" data-reveal><span class="live-dot"></span> 06 — book a call</p>
+      <h2 class="section-title" data-rise>Find one gap. <em class="serif">We'll close it.</em></h2>
+      <p class="section-lead" data-reveal>Grab 20 minutes. We'll audit one automation gap in your business, live, and show you what it takes to fix.</p>
+      <div class="book-panel" data-reveal>
+        <div id="booking-embed" class="booking-embed" data-cal-link="PLACEHOLDER_SCHEDULING_URL">
+          <div class="booking-fallback">
+            <div class="term-mini"><span class="p">$</span> et book --with founder <span class="cur">&#9646;</span></div>
+            <a class="btn btn-primary magnetic" data-cursor href="PLACEHOLDER_SCHEDULING_URL">Pick a time</a>
+            <p class="muted">or email <a href="mailto:PLACEHOLDER_EMAIL" data-cursor>PLACEHOLDER_EMAIL</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="assets/logo/lockup-reversed.svg" alt="Efficient Technologies" height="28">
+      <p>Automation for local businesses — booking, follow-up, CRM, and the workflows in between.</p>
+    </div>
+    <div class="footer-meta">
+      <p><span class="live-dot"></span> system online</p>
+      <p><a href="mailto:PLACEHOLDER_EMAIL" data-cursor>PLACEHOLDER_EMAIL</a></p>
+      <p class="muted">PLACEHOLDER_ADDRESS</p>
+      <p class="muted">&copy; <span id="year">2026</span> Efficient Technologies LLC</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js" defer></script>
+<script src="js/hero.js" defer></script>
+<script src="js/core.js" defer></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>
