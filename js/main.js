@@ -26,7 +26,10 @@
   function revealHero() {
     if (!window.gsap || reduce) { heroRise.forEach(function (s) { s.style.opacity = 1; s.style.transform = 'none'; }); return; }
     gsap.from(heroRise, { y: 34, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 });
-    setTimeout(function () { heroRise.forEach(function (s) { s.style.opacity = 1; }); }, 2200);
+    setTimeout(function () {
+      try { gsap.killTweensOf(heroRise); } catch (e) {}
+      heroRise.forEach(function (s) { s.style.opacity = 1; s.style.transform = 'none'; });
+    }, 2400);
   }
   (function preloader() {
     var pre = $('#preloader'), n = $('#pre-count-n');

@@ -1,7 +1,10 @@
-/* Signature "core" section — a scroll-scrubbed wireframe icosahedron (Three.js)
-   with narrative lines resolving over it as you scroll. Pins the section and
-   scrubs rotation + copy to scroll progress. Degrades gracefully. */
-(function () {
+/* Signature "core" section — WebGPU port (Three.js r180 WebGPURenderer, WebGL2
+   auto-fallback). Scroll-scrubbed wireframe geodesic + inner icosahedron + lime
+   vertex dots (instanced — WGSL has no point size), narrative lines resolving
+   over it via GSAP ScrollTrigger pin. Degrades gracefully. */
+import * as THREE from 'three';
+
+(async function () {
   var section = document.getElementById('core');
   if (!section) return;
   var canvas = document.getElementById('core-canvas');
@@ -26,42 +29,51 @@
     });
   }
 
-  var hasWebGL = (function () {
-    try { var c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); }
-    catch (e) { return false; }
-  })();
+  var renderer = null, scene, camera, group, scrollRot = 0;
+  if (canvas) {
+    try {
+      renderer = new THREE.WebGPURenderer({ canvas: canvas, antialias: true });
+      await renderer.init();
+      renderer.setClearColor(0x05070D, 1);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+      camera.position.z = 5;
+      group = new THREE.Group();
+      scene.add(group);
 
-  var renderer, scene, camera, group, scrollRot = 0, raf, running = false, t0 = 0;
+      var geo = new THREE.IcosahedronGeometry(1.55, 1);
+      group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color: 0x3D7BFF, transparent: true, opacity: 0.6 })));
+      group.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.92, 0)),
+        new THREE.LineBasicMaterial({ color: 0x284067, transparent: true, opacity: 0.85 })));
 
-  if (canvas && window.THREE && hasWebGL) {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.z = 5;
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    renderer.setClearColor(0x000000, 0);
-    group = new THREE.Group();
-    scene.add(group);
-
-    var geo = new THREE.IcosahedronGeometry(1.55, 1);
-    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),
-      new THREE.LineBasicMaterial({ color: 0x3D7BFF, transparent: true, opacity: 0.6 })));
-    group.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xB8F24A, size: 0.06 })));
-    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.92, 0)),
-      new THREE.LineBasicMaterial({ color: 0x284067, transparent: true, opacity: 0.85 })));
-    resize();
-    window.addEventListener('resize', resize);
+      var seen = {}, verts = [];
+      var pos = geo.attributes.position;
+      for (var i = 0; i < pos.count; i++) {
+        var x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        var k = x.toFixed(3) + ',' + y.toFixed(3) + ',' + z.toFixed(3);
+        if (!seen[k]) { seen[k] = 1; verts.push([x, y, z]); }
+      }
+      var dots = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.028, 0),
+        new THREE.MeshBasicMaterial({ color: 0xB8F24A }), verts.length);
+      var dummy = new THREE.Object3D();
+      verts.forEach(function (v, idx) { dummy.position.set(v[0], v[1], v[2]); dummy.updateMatrix(); dots.setMatrixAt(idx, dummy.matrix); });
+      group.add(dots);
+    } catch (e) { renderer = null; }
   }
 
   function resize() {
     if (!renderer) return;
     var w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
   }
+  window.addEventListener('resize', resize);
+  resize();
 
-  function frame(ts) {
-    if (!running) return;
+  var t0 = 0;
+  function tick(ts) {
     if (!t0) t0 = ts;
     var t = (ts - t0) / 1000;
     if (group) {
@@ -69,14 +81,13 @@
       group.rotation.x = Math.sin(t * 0.2) * 0.14 + scrollRot * 0.5;
       renderer.render(scene, camera);
     }
-    raf = requestAnimationFrame(frame);
   }
-  function start() { if (!running && group && !reduce) { running = true; raf = requestAnimationFrame(frame); } }
-  function stop() { running = false; if (raf) cancelAnimationFrame(raf); }
+  function start() { if (renderer && !reduce) renderer.setAnimationLoop(tick); }
+  function stop() { if (renderer) renderer.setAnimationLoop(null); }
 
   if (reduce) {
-    lines.forEach(function (el) { el.style.opacity = 1; el.style.transform = 'none'; });
-    if (group) { group.rotation.set(0.3, 0.6, 0); renderer.render(scene, camera); }
+    lines.forEach(function (el) { el.style.opacity = 1; el.style.transform = 'none'; el.style.position = 'relative'; });
+    if (renderer) { group.rotation.set(0.3, 0.6, 0); renderer.render(scene, camera); }
     return;
   }
 
@@ -99,8 +110,7 @@
     });
     start();
   }
+  if (window.gsap && window.ScrollTrigger) initST(); else setTimeout(initST, 120);
 
-  if (window.gsap && window.ScrollTrigger) initST(); else setTimeout(initST, 60);
-
-  document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else start(); });
 })();

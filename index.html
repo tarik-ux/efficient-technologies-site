@@ -61,7 +61,7 @@
     <div class="hero-glow" aria-hidden="true"></div>
     <span class="side-label side-left" aria-hidden="true">Efficient Technologies — automation studio</span>
     <div class="hero-content container">
-      <p class="eyebrow" data-reveal><span class="live-dot"></span> system online &nbsp;//&nbsp; automation for local business</p>
+      <p class="eyebrow" data-reveal><span class="live-dot"></span> system online &nbsp;//&nbsp; automation for local business <span id="gpu-badge" class="gpu-badge" hidden></span></p>
       <h1 class="hero-title">
         <span class="rise"><em class="serif">Find the gaps.</em></span>
         <span class="rise">Automate them<span class="dot-blue">.</span></span>
@@ -217,18 +217,21 @@
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js" defer></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+    "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.webgpu.js",
+    "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.tsl.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js" defer></script>
-<script src="js/hero.js" defer></script>
-<script src="js/core.js" defer></script>
 <script src="js/main.js" defer></script>
+<script src="js/hero.js" type="module"></script>
+<script src="js/core.js" type="module"></script>
 </body>
 </html>
