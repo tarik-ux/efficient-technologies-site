@@ -105,6 +105,7 @@
   if (hasGsap && !reduce) {
     gsap.registerPlugin(ScrollTrigger);
     if (lenis) lenis.on('scroll', ScrollTrigger.update);
+    window.addEventListener('load', function () { setTimeout(function () { ScrollTrigger.refresh(); }, 300); });
 
     $$('[data-reveal]').forEach(function (el) {
       gsap.fromTo(el, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 86%' } });
