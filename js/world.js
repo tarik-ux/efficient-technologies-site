@@ -45,8 +45,8 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
   camera.position.z = 4.4;
 
   /* ---- story state (lerped every frame toward scroll-driven targets) ---- */
-  var cur = { scatter: 0, lime: 0, dim: 0, x: 2.05, y: 0, scale: 0.95, speed: 1 };
-  var tgt = { scatter: 0, lime: 0, dim: 0, x: 2.05, y: 0, scale: 0.95, speed: 1 };
+  var cur = { scatter: 0, lime: 0, dim: 0, x: 2.35, y: 0, scale: 0.68, speed: 1 };
+  var tgt = { scatter: 0, lime: 0, dim: 0, x: 2.35, y: 0, scale: 0.68, speed: 1 };
 
   var uScatter = uniform(0);
   var uLime = uniform(0);
@@ -56,10 +56,10 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
   var world = new THREE.Group();
   scene.add(world);
 
-  var n1 = mx_noise_float(normalLocal.mul(1.15).add(vec3(time.mul(0.22))));
-  var n2 = mx_noise_float(normalLocal.mul(2.7).sub(vec3(time.mul(0.14)))).mul(0.5);
-  var nBig = mx_noise_float(normalLocal.mul(0.6).add(vec3(time.mul(0.35))));
-  var disp = n1.add(n2).mul(float(0.24).add(uScatter.mul(0.5))).add(nBig.mul(uScatter).mul(0.9));
+  var n1 = mx_noise_float(positionLocal.mul(0.9).add(vec3(time.mul(0.24))));
+  var n2 = mx_noise_float(positionLocal.mul(2.2).sub(vec3(time.mul(0.15)))).mul(0.5);
+  var nBig = mx_noise_float(positionLocal.mul(0.5).add(vec3(time.mul(0.35))));
+  var disp = n1.add(n2).mul(float(0.13).add(uScatter.mul(0.45))).add(nBig.mul(uScatter).mul(0.8));
 
   var fres = float(1.0).sub(max(dot(normalView, positionViewDirection), 0.0)).pow(2.3);
   var base = mix(color(0x081226), color(0x3D7BFF), smoothstep(float(-0.22), float(0.24), disp));
@@ -71,7 +71,7 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
   var coreMat = new THREE.MeshBasicNodeMaterial();
   coreMat.positionNode = positionLocal.add(normalLocal.mul(disp));
   coreMat.colorNode = col;
-  var orb = new THREE.Mesh(new THREE.IcosahedronGeometry(1.35, isMobile ? 14 : 26), coreMat);
+  var orb = new THREE.Mesh(new THREE.TorusKnotGeometry(1.05, 0.34, isMobile ? 160 : 280, isMobile ? 24 : 40), coreMat);
   world.add(orb);
 
   /* ---- shard ring (radius breathes with scatter) ---- */
@@ -154,14 +154,14 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 
   /* ---- scroll story (per-chapter targets) ---- */
   var CHAPTERS = [
-    { sel: '#hero',    v: { scatter: 0,   lime: 0,   dim: 0,    x: 2.05,  y: 0,    scale: 0.95, speed: 1 } },
-    { sel: '#core',    v: { scatter: 0.25, lime: 0,  dim: 0,    x: 0,     y: 0,    scale: 1.05, speed: 1.4 } },
-    { sel: '#gaps',    v: { scatter: 1,   lime: 0,   dim: 0.25, x: -2.0,  y: 0.2,  scale: 0.9,  speed: 0.7 } },
-    { sel: '#automate',v: { scatter: 0,   lime: 0,   dim: 0.2,  x: 2.0,   y: 0,    scale: 0.85, speed: 1.6 } },
-    { sel: '#how',     v: { scatter: 0.1, lime: 0,   dim: 0.35, x: 0,     y: -0.6, scale: 0.6,  speed: 2.2 } },
-    { sel: '#proof',   v: { scatter: 0,   lime: 0.15, dim: 0.5, x: -2.2,  y: 0,    scale: 0.7,  speed: 0.8 } },
-    { sel: '#pricing', v: { scatter: 0,   lime: 0,   dim: 0.6,  x: 2.4,   y: 0,    scale: 0.6,  speed: 0.5 } },
-    { sel: '#book',    v: { scatter: 0.15, lime: 1,  dim: 0.1,  x: 0,     y: 0.1,  scale: 1.0,  speed: 1.1 } }
+    { sel: '#hero',    v: { scatter: 0,   lime: 0,   dim: 0,    x: 2.35,  y: 0,    scale: 0.68, speed: 1 } },
+    { sel: '#core',    v: { scatter: 0.25, lime: 0,  dim: 0,    x: 0,     y: 0,    scale: 0.78, speed: 1.4 } },
+    { sel: '#gaps',    v: { scatter: 1,   lime: 0,   dim: 0.25, x: -2.3,  y: 0.2,  scale: 0.62, speed: 0.7 } },
+    { sel: '#automate',v: { scatter: 0,   lime: 0,   dim: 0.2,  x: 2.3,   y: 0,    scale: 0.6,  speed: 1.6 } },
+    { sel: '#how',     v: { scatter: 0.1, lime: 0,   dim: 0.35, x: 0,     y: -0.7, scale: 0.45, speed: 2.2 } },
+    { sel: '#proof',   v: { scatter: 0,   lime: 0.15, dim: 0.5, x: -2.5,  y: 0,    scale: 0.5,  speed: 0.8 } },
+    { sel: '#pricing', v: { scatter: 0,   lime: 0,   dim: 0.6,  x: 2.6,   y: 0,    scale: 0.45, speed: 0.5 } },
+    { sel: '#book',    v: { scatter: 0.15, lime: 1,  dim: 0.1,  x: 0,     y: 0.1,  scale: 0.72, speed: 1.1 } }
   ];
   function setTargets(v) { for (var k in v) tgt[k] = v[k]; }
 
