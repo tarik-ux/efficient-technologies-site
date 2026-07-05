@@ -17,25 +17,11 @@
     }
   }
 
-  /* ---- #core pinned narrative + scroll-scrubbed statue rotation ---- */
+  /* ---- #core pinned narrative ---- */
   var section = document.getElementById('core');
   if (!section) return;
   var lines = Array.prototype.slice.call(section.querySelectorAll('.core-line'));
   var pct = document.getElementById('core-pct');
-  var scrub = document.getElementById('core-scrub');
-  var scrubDur = 0, lastSeek = -1;
-  if (scrub) {
-    try { scrub.pause(); } catch (e) {}
-    scrub.addEventListener('loadedmetadata', function () { scrubDur = scrub.duration || 0; });
-    if (scrub.readyState >= 1) scrubDur = scrub.duration || 0;
-  }
-  function setScrub(p) {
-    if (!scrub || !scrubDur) return;
-    var t = Math.min(p, 0.999) * (scrubDur - 0.05);
-    if (Math.abs(t - lastSeek) < 0.033) return;
-    lastSeek = t;
-    try { scrub.currentTime = t; } catch (e) {}
-  }
   var bands = [[0.04, 0.20, 0.40, 0.46], [0.46, 0.60, 0.74, 0.80], [0.80, 0.90, 1.01, 1.06]];
   function setLines(p) {
     lines.forEach(function (el, i) {
@@ -62,7 +48,6 @@
       trigger: section, start: 'top top', end: '+=1600', scrub: true, pin: true, anticipatePin: 1,
       onUpdate: function (self) {
         setLines(self.progress);
-        setScrub(self.progress);
         if (pct) { var n = Math.round(self.progress * 100); pct.textContent = n >= 100 ? '100' : (n < 10 ? '0' + n : '' + n); }
       }
     });

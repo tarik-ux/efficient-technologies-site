@@ -158,39 +158,41 @@
     $$('[data-count]').forEach(countUp);
   }
 
-  /* ---- self-typing terminal ---- */
+  /* ---- live operations feed (example outcomes) ---- */
   var term = $('#term-lines');
   if (term) {
-    var LINES = [
-      { t: '$ et audit --site brightsmile-dental.com', c: 'cmd', d: 420 },
-      { t: 'scanning… 7 automation gaps found', c: 'dim', d: 320 },
-      { t: '✓ online booking', c: 'ok', d: 150 },
-      { t: '✓ follow-up sequences', c: 'ok', d: 150 },
-      { t: '✓ review engine', c: 'ok', d: 260 },
-      { t: '$ et deploy --approve', c: 'cmd', d: 420 },
-      { t: '● live in 68h', c: 'live', d: 0 }
+    var OPS = [
+      { t: '✓ appointment set — vela dental', c: 'ok', k: 0 },
+      { t: '✓ review replied — northside barbers', c: 'ok', k: 1 },
+      { t: '✓ follow-up sent — rivera law', c: 'ok', k: 2 },
+      { t: '✓ lead captured — casa tacos', c: 'ok', k: 2 },
+      { t: 'inbound reply — classifying…', c: 'b', k: null },
+      { t: '✓ no-show rescued — atx roofing', c: 'ok', k: 0 },
+      { t: '$ et followup --sequence day-3 --batch 12', c: 'dim', k: null },
+      { t: '✓ 12 follow-ups sent — 3 opens first hour', c: 'ok', k: 2 },
+      { t: 'negative review detected — drafting response', c: 'w', k: null },
+      { t: '✓ new system deployed — lakeview vet', c: 'ok', k: 3 }
     ];
-    function render(list) { term.innerHTML = list.map(function (l) { return '<div class="tl ' + l.c + '">' + l.t + '</div>'; }).join(''); }
-    if (reduce || !('requestAnimationFrame' in window)) {
-      render(LINES);
-    } else {
-      var li = 0;
-      function typeLine() {
-        if (li >= LINES.length) return;
-        var l = LINES[li];
-        var div = document.createElement('div');
-        div.className = 'tl ' + l.c;
-        term.appendChild(div);
-        var ci = 0;
-        (function type() {
-          div.textContent = l.t.slice(0, ci);
-          ci++;
-          if (ci <= l.t.length) setTimeout(type, 14);
-          else { li++; setTimeout(typeLine, l.d || 200); }
-        })();
+    var opsCount = [0, 0, 0, 0], oi = 0;
+    function addOps() {
+      var e = OPS[oi % OPS.length]; oi++;
+      var div = document.createElement('div');
+      div.className = 'tl ' + e.c;
+      div.textContent = e.t;
+      term.appendChild(div);
+      while (term.children.length > 6) term.removeChild(term.firstChild);
+      if (e.k != null) {
+        opsCount[e.k]++;
+        var el = $('#ops-c' + e.k);
+        if (el) el.textContent = opsCount[e.k];
       }
-      setTimeout(typeLine, 1500);
     }
+    var seed = document.createElement('div');
+    seed.className = 'tl dim';
+    seed.textContent = '$ et ops --stream --all-clients';
+    term.appendChild(seed);
+    if (reduce) { for (var oz = 0; oz < 5; oz++) addOps(); }
+    else { for (var oz2 = 0; oz2 < 3; oz2++) addOps(); setInterval(addOps, 1900); }
   }
 
   /* ---- 3D tilt tiles (fine pointer only) ---- */
