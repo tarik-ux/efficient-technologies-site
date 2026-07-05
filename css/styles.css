@@ -10,6 +10,8 @@ body{
 img{max-width:100%;display:block;}
 a{color:var(--et-blue);text-decoration:none;}
 .world-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center right;z-index:0;pointer-events:none;filter:saturate(1.05);}
+.journey-video{opacity:0;transition:opacity .7s ease;}
+body.journey-on .journey-video{opacity:1;}
 main,footer,.nav{position:relative;z-index:1;}
 h1,h2,h3{color:var(--et-white);font-family:var(--et-font-display);font-weight:700;margin:0;}
 .container{max-width:var(--et-container);margin:0 auto;padding:0 var(--et-gutter);}

@@ -40,9 +40,34 @@
     return;
   }
 
+  /* ---- Active-Theory-style camera journey: scroll scrubs a drone shot ---- */
+  var journey = document.getElementById('journey-video');
+  var jDur = 0, jLast = -1;
+  if (journey) {
+    try { journey.pause(); } catch (e) {}
+    journey.addEventListener('loadedmetadata', function () { jDur = journey.duration || 0; });
+    if (journey.readyState >= 1) jDur = journey.duration || 0;
+  }
+  function setJourney(p) {
+    if (!journey || !jDur) return;
+    var t = Math.min(Math.max(p, 0), 0.999) * (jDur - 0.05);
+    if (Math.abs(t - jLast) < 0.03) return;
+    jLast = t;
+    try { journey.currentTime = t; } catch (e) {}
+  }
+
   function initST() {
     if (!(window.gsap && window.ScrollTrigger)) { setTimeout(initST, 120); return; }
     gsap.registerPlugin(ScrollTrigger);
+    if (journey) {
+      ScrollTrigger.create({
+        trigger: '#core', endTrigger: '#book', start: 'top 65%', end: 'center center', scrub: true,
+        onUpdate: function (self) { setJourney(self.progress); },
+        onEnter: function () { document.body.classList.add('journey-on'); },
+        onEnterBack: function () { document.body.classList.add('journey-on'); },
+        onLeaveBack: function () { document.body.classList.remove('journey-on'); }
+      });
+    }
     setLines(0);
     ScrollTrigger.create({
       trigger: section, start: 'top top', end: '+=1600', scrub: true, pin: true, anticipatePin: 1,
