@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import vm from 'node:vm';
 
 const root = path.resolve(process.env.SITE_ROOT ?? '.');
 const contractRoot = path.resolve(process.env.CONTRACT_ROOT ?? '.');
@@ -120,6 +121,287 @@ function cssRule(css, selector) {
   assert.ok(match, `missing CSS rule ${selector}`);
   return match[1];
 }
+
+class FakeClassList {
+  constructor() {
+    this.values = new Set();
+  }
+
+  add(name) {
+    this.values.add(name);
+  }
+
+  remove(name) {
+    this.values.delete(name);
+  }
+
+  toggle(name, force) {
+    const enabled = force === undefined ? !this.values.has(name) : Boolean(force);
+    if (enabled) this.values.add(name);
+    else this.values.delete(name);
+    return enabled;
+  }
+
+  contains(name) {
+    return this.values.has(name);
+  }
+}
+
+class FakeMediaElement {
+  constructor(id, dataSrc) {
+    this.id = id;
+    this.dataSrc = dataSrc;
+    this.classList = new FakeClassList();
+    this.listeners = new Map();
+    this.playAttempts = [];
+    this.pauseCalls = 0;
+    this.paused = true;
+    this.readyState = 0;
+    this.currentTime = 0;
+    this.src = '';
+  }
+
+  getAttribute(name) {
+    return name === 'data-src' ? this.dataSrc : null;
+  }
+
+  addEventListener(type, callback, options) {
+    const entries = this.listeners.get(type) ?? [];
+    entries.push({ callback, once: Boolean(options?.once) });
+    this.listeners.set(type, entries);
+  }
+
+  removeEventListener(type, callback) {
+    const entries = this.listeners.get(type) ?? [];
+    this.listeners.set(type, entries.filter((entry) => entry.callback !== callback));
+  }
+
+  listenerCount(type) {
+    return (this.listeners.get(type) ?? []).length;
+  }
+
+  dispatch(type) {
+    if (type === 'canplay') this.readyState = 4;
+    const entries = [...(this.listeners.get(type) ?? [])];
+    for (const entry of entries) {
+      entry.callback();
+      if (entry.once) this.removeEventListener(type, entry.callback);
+    }
+  }
+
+  load() {}
+
+  pause() {
+    this.pauseCalls++;
+    this.paused = true;
+  }
+
+  play() {
+    this.paused = false;
+    const attempt = {
+      onReject: null,
+      catch(callback) {
+        this.onReject = callback;
+        return this;
+      },
+      reject(error = new Error('play rejected')) {
+        if (this.onReject) this.onReject(error);
+      },
+    };
+    this.playAttempts.push(attempt);
+    return attempt;
+  }
+}
+
+function fakeElement(id) {
+  return {
+    id,
+    classList: new FakeClassList(),
+    style: {},
+    getBoundingClientRect() {
+      return { top: 10_000, bottom: 11_000 };
+    },
+  };
+}
+
+function createAmbientHarness() {
+  const dataSources = {
+    'ch-t1': `assets/video/t1-v${release}.mp4`,
+    'ch-t1r': `assets/video/t1r-v${release}.mp4`,
+    'ch-t2': `assets/video/t2-v${release}.mp4`,
+    'ch-t2r': `assets/video/t2r-v${release}.mp4`,
+    'ch-t3': `assets/video/t3-v${release}.mp4`,
+    'ch-t3r': `assets/video/t3r-v${release}.mp4`,
+  };
+  const media = Object.fromEntries(
+    Object.entries(dataSources).map(([id, dataSrc]) => [id, new FakeMediaElement(id, dataSrc)]),
+  );
+  const body = fakeElement('body');
+  const core = fakeElement('core');
+  core.querySelectorAll = () => [fakeElement('line-1'), fakeElement('line-2'), fakeElement('line-3')];
+  const elements = {
+    ...media,
+    core,
+    'core-pct': { textContent: '' },
+    'chapter-layer': fakeElement('chapter-layer'),
+    gaps: fakeElement('gaps'),
+    how: fakeElement('how'),
+    book: fakeElement('book'),
+  };
+  const documentListeners = new Map();
+  const document = {
+    body,
+    hidden: false,
+    getElementById(id) {
+      return elements[id] ?? null;
+    },
+    querySelector(selector) {
+      return elements[selector.slice(1)] ?? null;
+    },
+    addEventListener(type, callback) {
+      const callbacks = documentListeners.get(type) ?? [];
+      callbacks.push(callback);
+      documentListeners.set(type, callbacks);
+    },
+  };
+  const triggers = [];
+  const ScrollTrigger = {
+    create(config) {
+      triggers.push(config);
+      return config;
+    },
+  };
+  const gsap = { registerPlugin() {} };
+  const windowListeners = new Map();
+  const window = {
+    ScrollTrigger,
+    gsap,
+    innerHeight: 1_000,
+    scrollY: 0,
+    matchMedia() {
+      return { matches: false };
+    },
+    addEventListener(type, callback) {
+      const callbacks = windowListeners.get(type) ?? [];
+      callbacks.push(callback);
+      windowListeners.set(type, callbacks);
+    },
+    removeEventListener(type, callback) {
+      const callbacks = windowListeners.get(type) ?? [];
+      windowListeners.set(type, callbacks.filter((entry) => entry !== callback));
+    },
+  };
+  vm.runInNewContext(read('js/ambient.js'), {
+    document,
+    gsap,
+    navigator: {},
+    requestAnimationFrame(callback) {
+      callback(0);
+      return 1;
+    },
+    ScrollTrigger,
+    setTimeout() {
+      return 1;
+    },
+    window,
+  }, { filename: 'ambient.js' });
+
+  return {
+    body,
+    media,
+    chapter(selector) {
+      const trigger = triggers.find((entry) => entry.trigger === selector);
+      assert.ok(trigger, `missing ScrollTrigger for ${selector}`);
+      return trigger;
+    },
+    setHidden(hidden) {
+      document.hidden = hidden;
+      for (const callback of documentListeners.get('visibilitychange') ?? []) callback();
+    },
+  };
+}
+
+test('chapter media state machine ignores stale resume rejection', () => {
+  const harness = createAmbientHarness();
+  const chapterOne = harness.media['ch-t1'];
+  const chapterTwo = harness.media['ch-t2'];
+  const chapterTwoReverse = harness.media['ch-t2r'];
+
+  harness.chapter('#gaps').onEnter();
+  chapterOne.dispatch('canplay');
+  harness.setHidden(true);
+  harness.setHidden(false);
+  assert.equal(chapterOne.playAttempts.length, 2);
+  const resumedAttempt = chapterOne.playAttempts[1];
+
+  harness.chapter('#how').onEnter();
+  chapterTwo.dispatch('canplay');
+  resumedAttempt.reject();
+  chapterTwo.dispatch('ended');
+  harness.chapter('#how').onLeaveBack();
+  chapterTwoReverse.dispatch('canplay');
+  chapterTwoReverse.dispatch('ended');
+  harness.chapter('#how').onEnter();
+
+  assert.equal(chapterTwo.playAttempts.length, 2, 'newer playback must remain reusable');
+});
+
+test('chapter media state machine rolls back active media errors', () => {
+  const harness = createAmbientHarness();
+  const chapterOne = harness.media['ch-t1'];
+  const chapterTwo = harness.media['ch-t2'];
+  const chapterTwoReverse = harness.media['ch-t2r'];
+
+  harness.chapter('#gaps').onEnter();
+  chapterOne.dispatch('canplay');
+  chapterOne.dispatch('ended');
+  harness.chapter('#how').onEnter();
+  chapterTwo.dispatch('canplay');
+  assert.equal(chapterTwo.listenerCount('ended'), 1);
+
+  chapterTwo.dispatch('error');
+
+  assert.equal(chapterTwo.paused, true);
+  assert.equal(chapterTwo.listenerCount('ended'), 0);
+  assert.equal(chapterOne.classList.contains('active'), true);
+  assert.equal(chapterTwo.classList.contains('active'), false);
+  assert.equal(harness.body.classList.contains('chapter-on'), true);
+  harness.chapter('#how').onLeaveBack();
+  chapterTwoReverse.dispatch('canplay');
+  assert.equal(chapterTwoReverse.playAttempts.length, 0, 'requested chapter must roll back to current');
+  harness.chapter('#how').onEnter();
+  harness.chapter('#how').onLeaveBack();
+  assert.equal(chapterTwoReverse.playAttempts.length, 0, 'known failed target must keep requested at current');
+});
+
+test('chapter media state machine rolls back the latest pre-play load error', () => {
+  const harness = createAmbientHarness();
+  const chapterOne = harness.media['ch-t1'];
+  const chapterOneReverse = harness.media['ch-t1r'];
+
+  harness.chapter('#gaps').onEnter();
+  chapterOne.dispatch('error');
+  harness.chapter('#gaps').onLeaveBack();
+  chapterOneReverse.dispatch('canplay');
+
+  assert.equal(chapterOneReverse.playAttempts.length, 0, 'failed pending target must roll back to current');
+  assert.equal(harness.body.classList.contains('chapter-on'), false);
+});
+
+test('chapter media state machine ignores stale load errors', () => {
+  const harness = createAmbientHarness();
+  const chapterOne = harness.media['ch-t1'];
+  const chapterTwo = harness.media['ch-t2'];
+
+  harness.chapter('#gaps').onEnter();
+  harness.chapter('#how').onEnter();
+  chapterOne.dispatch('error');
+  chapterTwo.dispatch('canplay');
+
+  assert.equal(chapterTwo.playAttempts.length, 1);
+  assert.equal(chapterTwo.classList.contains('active'), true);
+  assert.equal(harness.body.classList.contains('chapter-on'), true);
+});
 
 test('only poster permits source-copy byte equality', () => {
   assert.equal(imageHasAllowedByteSize({ logicalId: 'poster', sourceBytes: 100, optimizedBytes: 100 }), true);

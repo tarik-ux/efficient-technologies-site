@@ -37,9 +37,9 @@
       asset.waiters.length = 0;
       waiters.forEach(function (waiter) { waiter(); });
     }, { once: true });
-    asset.el.addEventListener('error', function () { failAsset(asset); }, { once: true });
+    asset.el.addEventListener('error', function () { handleAssetError(asset); }, { once: true });
     asset.el.src = asset.src;
-    try { asset.el.load(); } catch (e) { failAsset(asset); }
+    try { asset.el.load(); } catch (e) { handleAssetError(asset); }
   }
 
   function whenReady(asset, callback) {
@@ -134,10 +134,28 @@
   var requestedChapter = 0;
   var requestGeneration = 0;
   var activePlayback = null;
+  var pendingRequest = null;
   var heldElement = null;
   var resumeChapter = false;
   var pairScheduled = {};
   var laterPairsWatched = false;
+
+  function handleAssetError(asset) {
+    if (!asset) return;
+    if (activePlayback && activePlayback.asset === asset) {
+      activePlayback.finish(false);
+      return;
+    }
+    failAsset(asset);
+    if (pendingRequest
+      && pendingRequest.asset === asset
+      && pendingRequest.token === requestGeneration
+      && pendingRequest.target === requestedChapter) {
+      pendingRequest = null;
+      requestedChapter = currentChapter;
+      requestGeneration++;
+    }
+  }
 
   function activatePair(number) {
     activateAsset(FWD[number]);
@@ -168,6 +186,7 @@
 
   function beginPlayback(asset, token, target, holdEnd) {
     if (!asset || asset.state === 'error' || token !== requestGeneration || target !== requestedChapter) return;
+    if (pendingRequest && pendingRequest.asset === asset && pendingRequest.token === token) pendingRequest = null;
     stopActivePlayback();
     var previousHeld = heldElement;
     var playback = {
@@ -176,6 +195,7 @@
       target: target,
       holdEnd: holdEnd,
       previousHeld: previousHeld,
+      finish: null,
       onEnded: null
     };
 
@@ -187,6 +207,9 @@
       resumeChapter = false;
       if (!success) {
         failAsset(asset);
+        pendingRequest = null;
+        requestedChapter = currentChapter;
+        requestGeneration++;
         heldElement = previousHeld;
         showOnly(previousHeld);
         document.body.classList.toggle('chapter-on', Boolean(previousHeld));
@@ -204,6 +227,7 @@
       }
     }
 
+    playback.finish = finish;
     playback.onEnded = function () { finish(true); };
     activePlayback = playback;
     showOnly(asset.el);
@@ -228,6 +252,14 @@
     var movingForward = target > previous;
     var boundary = movingForward ? target : previous;
     var asset = movingForward ? FWD[boundary] : REV[boundary];
+    if (!asset || asset.state === 'error') {
+      pendingRequest = null;
+      stopActivePlayback();
+      requestedChapter = currentChapter;
+      requestGeneration++;
+      return;
+    }
+    pendingRequest = { asset: asset, token: token, target: target };
     activatePair(boundary);
     stopActivePlayback();
     whenReady(asset, function () {
@@ -339,10 +371,9 @@
       revealWorld();
     }
     if (activePlayback && resumeChapter && activePlayback.token === requestGeneration) {
+      var playback = activePlayback;
       resumeChapter = false;
-      safePlay(activePlayback.asset.el, function () {
-        if (activePlayback) failAsset(activePlayback.asset);
-      });
+      safePlay(playback.asset.el, function () { playback.finish(false); });
     }
   });
 
