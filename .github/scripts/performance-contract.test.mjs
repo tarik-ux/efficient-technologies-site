@@ -78,9 +78,15 @@ function escapeRegex(value) {
 }
 
 function attr(tag, name) {
-  const match = tag.match(new RegExp(`\\b${name}=(['\"])(.*?)\\1`, 'i'));
+  const match = tag.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*(['\"])(.*?)\\1`, 'i'));
   return match?.[2] ?? null;
 }
+
+test('attribute parser distinguishes data-src from src', () => {
+  const tag = '<video data-src="x.mp4">';
+  assert.equal(attr(tag, 'src'), null);
+  assert.equal(attr(tag, 'data-src'), 'x.mp4');
+});
 
 function tags(html, name) {
   return html.match(new RegExp(`<${name}\\b[^>]*>`, 'gi')) ?? [];
