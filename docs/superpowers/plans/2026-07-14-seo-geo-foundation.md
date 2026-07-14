@@ -27,7 +27,7 @@
 
 **Interfaces:**
 - Consumes: `SITE_ROOT`, an absolute or relative path to the deploy root.
-- Produces: Node test suites named `routing`, `metadata`, `entity graph`, `blog index`, `articles`, `crawler policy`, and `sitemap`.
+- Produces: Node test suites named `routing`, `core page metadata`, `blog metadata`, `entity graph`, `blog index`, `articles`, `crawler policy`, and `sitemap`.
 
 - [ ] **Step 1: Create the validator before changing production files**
 
@@ -107,8 +107,8 @@ test('routing removes preview content and defines a real 404', () => {
   assert.match(redirects, /^\/blog-preview\.html\s+\/blog\/\s+301$/m);
 });
 
-test('metadata is complete and canonical on every indexable page', () => {
-  for (const page of pages) {
+function assertPageMetadata(pagesToCheck) {
+  for (const page of pagesToCheck) {
     assert.equal(exists(page.file), true, `${page.file} must exist`);
     const html = read(page.file);
     assert.equal((html.match(/<title>[\s\S]*?<\/title>/gi) ?? []).length, 1, `${page.file} title`);
@@ -123,6 +123,14 @@ test('metadata is complete and canonical on every indexable page', () => {
     assert.ok(meta(html, 'name', 'twitter:description', `${page.file} twitter:description`));
     assert.ok(meta(html, 'name', 'twitter:image:alt', `${page.file} twitter:image:alt`));
   }
+}
+
+test('core page metadata is complete and canonical', () => {
+  assertPageMetadata(pages.slice(0, 2));
+});
+
+test('blog metadata is complete and canonical', () => {
+  assertPageMetadata(pages.slice(2));
   assert.doesNotMatch(read('blog/index.html'), /&amp;amp;/i);
 });
 
@@ -310,7 +318,7 @@ git commit -m "fix: correct crawl and not-found behavior"
 - [ ] **Step 1: Run entity and metadata tests to confirm RED**
 
 ```powershell
-node --test --test-name-pattern='metadata|entity graph' .github/scripts/seo-geo.test.mjs
+node --test --test-name-pattern='core page metadata|entity graph' .github/scripts/seo-geo.test.mjs
 ```
 
 Expected: FAIL because the About page is absent, homepage Twitter metadata is incomplete, and `ProfessionalService` remains.
@@ -366,7 +374,7 @@ The About head must have complete metadata and an AboutPage JSON-LD graph contai
 Run:
 
 ```powershell
-node --test --test-name-pattern='metadata|entity graph' .github/scripts/seo-geo.test.mjs
+node --test --test-name-pattern='core page metadata|entity graph' .github/scripts/seo-geo.test.mjs
 ```
 
 Expected: PASS for both suites.
@@ -395,7 +403,7 @@ git commit -m "feat: add verified business and author entity"
 - [ ] **Step 1: Run blog tests to confirm RED**
 
 ```powershell
-node --test --test-name-pattern='metadata|blog index|articles' .github/scripts/seo-geo.test.mjs
+node --test --test-name-pattern='blog metadata|blog index|articles' .github/scripts/seo-geo.test.mjs
 ```
 
 Expected: FAIL for the double-escaped title, missing social images, absent Blog graph, absent author/update/hero elements, and minimal Article schema.
@@ -457,7 +465,7 @@ Add complete robots/Open Graph/Twitter metadata to each article and add the Abou
 - [ ] **Step 5: Run the blog suites and the full suite**
 
 ```powershell
-node --test --test-name-pattern='metadata|blog index|articles' .github/scripts/seo-geo.test.mjs
+node --test --test-name-pattern='blog metadata|blog index|articles' .github/scripts/seo-geo.test.mjs
 node --test .github/scripts/seo-geo.test.mjs
 ```
 

@@ -73,8 +73,8 @@ test('routing removes preview content and defines a real 404', () => {
   assert.match(redirects, /^\/blog-preview\.html\s+\/blog\/\s+301$/m);
 });
 
-test('metadata is complete and canonical on every indexable page', () => {
-  for (const page of pages) {
+function assertPageMetadata(pagesToCheck) {
+  for (const page of pagesToCheck) {
     assert.equal(exists(page.file), true, `${page.file} must exist`);
     const html = read(page.file);
     assert.equal((html.match(/<title>[\s\S]*?<\/title>/gi) ?? []).length, 1, `${page.file} title`);
@@ -89,6 +89,14 @@ test('metadata is complete and canonical on every indexable page', () => {
     assert.ok(meta(html, 'name', 'twitter:description', `${page.file} twitter:description`));
     assert.ok(meta(html, 'name', 'twitter:image:alt', `${page.file} twitter:image:alt`));
   }
+}
+
+test('core page metadata is complete and canonical', () => {
+  assertPageMetadata(pages.slice(0, 2));
+});
+
+test('blog metadata is complete and canonical', () => {
+  assertPageMetadata(pages.slice(2));
   assert.doesNotMatch(read('blog/index.html'), /&amp;amp;/i);
 });
 
