@@ -1,0 +1,251 @@
+{
+    "release":  "2026-07-14",
+    "generatedAt":  "2026-07-14T20:25:18Z",
+    "videoQuality":  {
+                         "metric":  "VMAF",
+                         "minimum":  95
+                     },
+    "aggregateOptimizedVideoBytes":  11681277,
+    "videos":  [
+                   {
+                       "logicalId":  "world",
+                       "source":  "assets/video/city-loop.mp4",
+                       "output":  "assets/video/city-loop-v20260714.mp4",
+                       "sourceSha256":  "b35f520c71ba7cf8c327632499f6f112a02ab707810d452d8ae89c8105b0e6b0",
+                       "optimizedSha256":  "63a1b06128c146346a558a0b61f818d068d29679352e2d4118b1d8fb1cc02078",
+                       "sourceBytes":  9375685,
+                       "optimizedBytes":  1209756,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1920,
+                                           "height":  1080,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  193,
+                                           "durationSeconds":  8.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1920,
+                                              "height":  1080,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  193,
+                                              "durationSeconds":  8.041667
+                                          },
+                       "vmaf":  95.0626,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=25 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-1-forward",
+                       "source":  "assets/video/t1.mp4",
+                       "output":  "assets/video/t1-v20260714.mp4",
+                       "sourceSha256":  "6b04e20816cf23c0e5e26504aedf537eaab701224595ba3d79acb6a54b51aa3d",
+                       "optimizedSha256":  "a9fcb30e40497d2326c21f2ffefff74a701503389e2f2cacdf447181e950f1e2",
+                       "sourceBytes":  3834174,
+                       "optimizedBytes":  1979784,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  96.2176,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=28 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-1-reverse",
+                       "source":  "assets/video/t1r.mp4",
+                       "output":  "assets/video/t1r-v20260714.mp4",
+                       "sourceSha256":  "bc3b81c3756f76da50056c4b5ab0fc85b69ffafa2096ef6fb969534ea0cdb37e",
+                       "optimizedSha256":  "63689abed09831f05b5303cf459eefc17383e64fd130ed6e69ab55f6d9162aaa",
+                       "sourceBytes":  3678034,
+                       "optimizedBytes":  1835172,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  95.816,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=28 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-2-forward",
+                       "source":  "assets/video/t2.mp4",
+                       "output":  "assets/video/t2-v20260714.mp4",
+                       "sourceSha256":  "2d83a302431c8faa05ed7470314fe26d3c36326d9ea6656b776343f065b446c1",
+                       "optimizedSha256":  "200d22bceeb744dfcc16e762e79adfb1c640eaaac5263cc4336b6f3592b6f150",
+                       "sourceBytes":  2398406,
+                       "optimizedBytes":  1080076,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  95.4953,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=27 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-2-reverse",
+                       "source":  "assets/video/t2r.mp4",
+                       "output":  "assets/video/t2r-v20260714.mp4",
+                       "sourceSha256":  "fe618ac651ac1b3f885822ea3ad3da584bbf30dd1cafd1f675dd153b3250b170",
+                       "optimizedSha256":  "33d8e4f47ed70f4defb50ec7016032d683841990cad950894d0ad52808b656da",
+                       "sourceBytes":  2765054,
+                       "optimizedBytes":  1429616,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  95.5557,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=27 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-3-forward",
+                       "source":  "assets/video/t3.mp4",
+                       "output":  "assets/video/t3-v20260714.mp4",
+                       "sourceSha256":  "e428cde34ddfb039222f829aa9f34fedc6cff72aeab804a92051c5e738bd5573",
+                       "optimizedSha256":  "f8c8f0a610cda8f522911c6c533a206aaa977722b6c7c5b86ee19602f15e988a",
+                       "sourceBytes":  3293446,
+                       "optimizedBytes":  2109770,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  95.9492,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=25 yuv420p faststart no-audio"
+                   },
+                   {
+                       "logicalId":  "chapter-3-reverse",
+                       "source":  "assets/video/t3r.mp4",
+                       "output":  "assets/video/t3r-v20260714.mp4",
+                       "sourceSha256":  "7f05376b5cce8a1d89a60a5f6bf67fde42ea3a5aa5796cb2f0aa1bcadc789863",
+                       "optimizedSha256":  "52bb9bc7520f33af555b39864136394a458ecbf42d9d52e13be7747727af3e6a",
+                       "sourceBytes":  3198918,
+                       "optimizedBytes":  2037103,
+                       "sourceProbe":  {
+                                           "codec":  "h264",
+                                           "pixelFormat":  "yuv420p",
+                                           "width":  1600,
+                                           "height":  900,
+                                           "frameRate":  "24/1",
+                                           "frameCount":  97,
+                                           "durationSeconds":  4.041667
+                                       },
+                       "optimizedProbe":  {
+                                              "codec":  "h264",
+                                              "pixelFormat":  "yuv420p",
+                                              "width":  1600,
+                                              "height":  900,
+                                              "frameRate":  "24/1",
+                                              "frameCount":  97,
+                                              "durationSeconds":  4.041667
+                                          },
+                       "vmaf":  96.0219,
+                       "visualReview":  "approved",
+                       "encoding":  "libx264 preset=slow crf=25 yuv420p faststart no-audio"
+                   }
+               ],
+    "images":  [
+                   {
+                       "logicalId":  "poster",
+                       "source":  "assets/city-poster.webp",
+                       "output":  "assets/city-poster-v20260714.webp",
+                       "sourceSha256":  "098d2b25cbbbce9e8b5e3bb3dbf74953c65312a82b429dea944e41ce9623d0fb",
+                       "optimizedSha256":  "098d2b25cbbbce9e8b5e3bb3dbf74953c65312a82b429dea944e41ce9623d0fb",
+                       "sourceBytes":  120376,
+                       "optimizedBytes":  120376,
+                       "width":  1376,
+                       "height":  768,
+                       "ssim":  1,
+                       "visualReview":  "approved",
+                       "encoding":  "source-copy"
+                   },
+                   {
+                       "logicalId":  "social",
+                       "source":  "assets/og.png",
+                       "output":  "assets/og-v20260714.jpg",
+                       "sourceSha256":  "645179afb47274c17b68783d3a904dd7cd76fa70d8992d4ce18a752e79e4de15",
+                       "optimizedSha256":  "b6470937e3381b6918aa01262c89f7f0f4aaa675a269feb9425120615e846403",
+                       "sourceBytes":  2190666,
+                       "optimizedBytes":  281466,
+                       "width":  1376,
+                       "height":  768,
+                       "ssim":  0.985309,
+                       "visualReview":  "approved",
+                       "encoding":  "mjpeg q:v=2 yuvj420p"
+                   }
+               ]
+}
