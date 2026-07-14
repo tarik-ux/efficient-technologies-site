@@ -5,15 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Business Automation for Local Businesses | Efficient Technologies</title>
 <meta name="description" content="Efficient Technologies builds automation for local businesses — booking, follow-up, CRM, and the workflows in between. Audited, built, and live in days.">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="icon" type="image/svg+xml" href="assets/logo/favicon.svg">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Efficient Technologies — Find the gaps. Automate them.">
 <meta property="og:description" content="Automation for local businesses. We audit the systems you're missing, then build them. Live in days.">
 <meta property="og:image" content="https://efficientautomate.com/assets/og.png">
-<meta property="og:url" content="https://efficientautomate.com">
+<meta property="og:image:alt" content="Efficient Technologies automation systems">
+<meta property="og:url" content="https://efficientautomate.com/">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="https://efficientautomate.com">
+<meta name="twitter:title" content="Efficient Technologies — Find the gaps. Automate them.">
+<meta name="twitter:description" content="Automation for local businesses. We audit the systems you're missing, then build them. Live in days.">
+<meta name="twitter:image" content="https://efficientautomate.com/assets/og.png">
+<meta name="twitter:image:alt" content="Efficient Technologies automation systems">
+<link rel="canonical" href="https://efficientautomate.com/">
 
 <script>document.documentElement.className="js";</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,26 +34,34 @@
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://efficientautomate.com/#org",
+      "@id": "https://efficientautomate.com/#organization",
       "name": "Efficient Technologies",
-      "url": "https://efficientautomate.com",
+      "legalName": "Efficient Technologies LLC",
+      "url": "https://efficientautomate.com/",
       "email": "tarik@efficientautomate.com",
       "logo": "https://efficientautomate.com/assets/og.png",
       "description": "Automation studio for local businesses — booking, follow-up, CRM, review management, lead capture, and workflow automation.",
+      "founder": { "@id": "https://efficientautomate.com/about/#tarik-kizildere" },
       "address": { "@type": "PostalAddress", "streetAddress": "30 N Gould St #65748", "addressLocality": "Sheridan", "addressRegion": "WY", "postalCode": "82801", "addressCountry": "US" }
     },
     {
-      "@type": "ProfessionalService",
-      "@id": "https://efficientautomate.com/#service",
-      "name": "Efficient Technologies",
-      "url": "https://efficientautomate.com",
-      "email": "tarik@efficientautomate.com",
+      "@type": "Person",
+      "@id": "https://efficientautomate.com/about/#tarik-kizildere",
+      "name": "Tarik Kizildere",
+      "jobTitle": "Founder",
+      "url": "https://efficientautomate.com/about/",
+      "worksFor": { "@id": "https://efficientautomate.com/#organization" }
+    },
+    {
+      "@type": "Service",
+      "@id": "https://efficientautomate.com/#automation-service",
+      "name": "Business Automation for Local Businesses",
+      "serviceType": "Business process automation",
+      "url": "https://efficientautomate.com/",
       "image": "https://efficientautomate.com/assets/og.png",
       "description": "We audit how a local business runs, find the systems it's missing — online booking, follow-up sequences, lightweight CRM, review management, lead capture, workflow automation — and build them. Audited, built, and live in days.",
-      "priceRange": "$997–$5,000+",
       "areaServed": { "@type": "Country", "name": "United States" },
-      "parentOrganization": { "@id": "https://efficientautomate.com/#org" },
-      "address": { "@type": "PostalAddress", "streetAddress": "30 N Gould St #65748", "addressLocality": "Sheridan", "addressRegion": "WY", "postalCode": "82801", "addressCountry": "US" },
+      "provider": { "@id": "https://efficientautomate.com/#organization" },
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "Automation packages",
@@ -61,10 +75,20 @@
     {
       "@type": "WebSite",
       "@id": "https://efficientautomate.com/#website",
-      "url": "https://efficientautomate.com",
+      "url": "https://efficientautomate.com/",
       "name": "Efficient Technologies",
       "inLanguage": "en-US",
-      "publisher": { "@id": "https://efficientautomate.com/#org" }
+      "publisher": { "@id": "https://efficientautomate.com/#organization" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://efficientautomate.com/#webpage",
+      "url": "https://efficientautomate.com/",
+      "name": "Business Automation for Local Businesses | Efficient Technologies",
+      "description": "Efficient Technologies builds automation for local businesses — booking, follow-up, CRM, and the workflows in between.",
+      "isPartOf": { "@id": "https://efficientautomate.com/#website" },
+      "about": { "@id": "https://efficientautomate.com/#organization" },
+      "inLanguage": "en-US"
     }
   ]
 }
@@ -294,6 +318,7 @@
     </div>
     <div class="footer-meta">
       <p><span class="live-dot"></span> system online</p>
+      <p><a href="/about/">About Efficient Technologies</a></p>
       <p><a href="mailto:tarik@efficientautomate.com" data-cursor>tarik@efficientautomate.com</a></p>
       <p class="muted">30 N Gould St #65748, Sheridan, WY 82801, USA</p>
       <p class="muted">&copy; <span id="year">2026</span> Efficient Technologies LLC</p>
