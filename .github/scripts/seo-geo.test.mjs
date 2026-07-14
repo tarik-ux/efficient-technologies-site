@@ -22,7 +22,7 @@ const articles = [
   { file: 'blog/crm-automation-local-business/index.html', published: '2026-07-08', image: '/assets/art/tower.webp' },
   { file: 'blog/business-process-automation-small-business/index.html', published: '2026-07-04', image: '/assets/art/street.webp' },
   { file: 'blog/booking-automation-after-hours/index.html', published: '2026-06-30', image: '/assets/art/dawn.webp' },
-  { file: 'blog/review-automation-local-seo/index.html', published: '2026-06-25', image: '/assets/og.png' },
+  { file: 'blog/review-automation-local-seo/index.html', published: '2026-06-25', image: '/assets/og-v20260714.jpg' },
   { file: 'blog/software-consulting-vs-in-house/index.html', published: '2026-06-20', image: '/assets/art/tower.webp' },
 ];
 
@@ -82,9 +82,9 @@ function assertPageMetadata(pagesToCheck) {
     assert.match(meta(html, 'name', 'robots', `${page.file} robots`), /max-image-preview:large/i);
     assert.equal(link(html, 'canonical', `${page.file} canonical`), page.canonical);
     assert.equal(meta(html, 'property', 'og:url', `${page.file} og:url`), page.canonical);
-    assert.equal(meta(html, 'property', 'og:image', `${page.file} og:image`), `${base}/assets/og.png`);
+    assert.equal(meta(html, 'property', 'og:image', `${page.file} og:image`), `${base}/assets/og-v20260714.jpg`);
     assert.ok(meta(html, 'property', 'og:image:alt', `${page.file} og:image:alt`));
-    assert.equal(meta(html, 'name', 'twitter:image', `${page.file} twitter:image`), `${base}/assets/og.png`);
+    assert.equal(meta(html, 'name', 'twitter:image', `${page.file} twitter:image`), `${base}/assets/og-v20260714.jpg`);
     assert.ok(meta(html, 'name', 'twitter:title', `${page.file} twitter:title`));
     assert.ok(meta(html, 'name', 'twitter:description', `${page.file} twitter:description`));
     assert.ok(meta(html, 'name', 'twitter:image:alt', `${page.file} twitter:image:alt`));
