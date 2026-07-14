@@ -255,7 +255,7 @@
       var raf = null;
       var settleTimer = null;
       tile.addEventListener('pointermove', function (e) {
-        if (settleTimer) { clearTimeout(settleTimer); settleTimer = null; }
+        if (settleTimer) { clearTimeout(settleTimer); settleTimer = null; tile.style.transition = ''; }
         tile.classList.add('motion-active');
         if (raf) return;
         raf = requestAnimationFrame(function () {

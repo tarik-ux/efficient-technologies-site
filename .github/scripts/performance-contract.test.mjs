@@ -578,6 +578,7 @@ test('runtime scheduling changes preserve motion constants', () => {
   assert.match(main, /document\.hidden/);
   assert.match(main, /classList\.add\('motion-active'\)/);
   assert.match(main, /classList\.remove\('motion-active'\)/);
+  assert.match(main, /if \(settleTimer\) \{ clearTimeout\(settleTimer\); settleTimer = null; tile\.style\.transition = ''; \}/);
 
   assert.match(cssRule(css, '.preloader'), /transition:transform \.35s var\(--et-ease\)/);
   assert.doesNotMatch(cssRule(css, '.btn'), /will-change/i);
