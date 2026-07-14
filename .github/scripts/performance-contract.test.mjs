@@ -91,6 +91,12 @@ function fps(value) {
   return denominator ? numerator / denominator : numerator;
 }
 
+function imageHasAllowedByteSize(entry) {
+  return entry.logicalId === 'poster'
+    ? entry.optimizedBytes <= entry.sourceBytes
+    : entry.optimizedBytes < entry.sourceBytes;
+}
+
 function localTarget(pageFile, value) {
   if (!value || /^(?:[a-z]+:|\/\/|#)/i.test(value)) return null;
   const clean = value.split('#')[0].split('?')[0];
@@ -108,6 +114,13 @@ function cssRule(css, selector) {
   assert.ok(match, `missing CSS rule ${selector}`);
   return match[1];
 }
+
+test('only poster permits source-copy byte equality', () => {
+  assert.equal(imageHasAllowedByteSize({ logicalId: 'poster', sourceBytes: 100, optimizedBytes: 100 }), true);
+  assert.equal(imageHasAllowedByteSize({ logicalId: 'poster', sourceBytes: 100, optimizedBytes: 101 }), false);
+  assert.equal(imageHasAllowedByteSize({ logicalId: 'social', sourceBytes: 100, optimizedBytes: 100 }), false);
+  assert.equal(imageHasAllowedByteSize({ logicalId: 'social', sourceBytes: 100, optimizedBytes: 99 }), true);
+});
 
 test('versioned media manifest records passing, byte-accurate assets', () => {
   assert.equal(contractExists(manifestPath), true, `${manifestPath} must exist`);
@@ -154,7 +167,7 @@ test('versioned media manifest records passing, byte-accurate assets', () => {
     assert.equal(entry.optimizedBytes, size(entry.output));
     assert.equal(entry.optimizedSha256, sha256(entry.output));
     assert.match(entry.sourceSha256, /^[a-f0-9]{64}$/);
-    assert.ok(entry.sourceBytes > entry.optimizedBytes, `${entry.logicalId} must be smaller`);
+    assert.ok(imageHasAllowedByteSize(entry), `${entry.logicalId} violates image byte-size contract`);
     assert.ok(entry.ssim >= 0.98, `${entry.logicalId} SSIM ${entry.ssim}`);
     assert.equal(entry.width, expected.width);
     assert.equal(entry.height, expected.height);
