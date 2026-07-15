@@ -1,9 +1,13 @@
 # Homepage critical CSS delivery design
 
-Date: 2026-07-15 (Europe/Berlin)  
-Status: approved design, implementation pending  
-Repository: `tarik-ux/efficient-technologies-site`  
-Draft pull request: `#2`  
+Date: 2026-07-15 (Europe/Berlin)
+
+Status: approved design, implementation pending
+
+Repository: `tarik-ux/efficient-technologies-site`
+
+Draft pull request: `#2`
+
 Approved implementation base: `57149d63296f4884cee8efea3ee158ac7a04a73c`
 
 ## Goal
