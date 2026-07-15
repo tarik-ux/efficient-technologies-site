@@ -8,11 +8,13 @@ import vm from 'node:vm';
 const root = path.resolve(process.env.SITE_ROOT ?? '.');
 const contractRoot = path.resolve(process.env.CONTRACT_ROOT ?? '.');
 const release = '20260714';
+const frauncesRelease = '20260715';
+const tokensRevision = '3';
 const publicBase = 'https://efficientautomate.com';
 const socialImage = `/assets/og-v${release}.jpg`;
 const manifestPath = '.github/performance/media-manifest.json';
 const expectedCssSha256 = {
-  'assets/tokens.css': '7fbefe7263d36d70caeb50226fb0c5f4a78031e5de8f8a9638d1bdcb42cb31ac',
+  'assets/tokens.css': '5fa72341c7d984b3b63be2c9b2997a4a257f268e2a464c9f534a8446e0c39c88',
   'css/styles.css': '79ebe674c1ca170fc8f9eca873fdba8b8767b9cf0e9e2a5d480f292cf04e2ae2',
 };
 
@@ -47,8 +49,20 @@ const expectedFonts = [
   `assets/fonts/inter-latin-v${release}.woff2`,
   `assets/fonts/space-grotesk-latin-v${release}.woff2`,
   `assets/fonts/jetbrains-mono-latin-v${release}.woff2`,
-  `assets/fonts/fraunces-italic-latin-v${release}.woff2`,
+  `assets/fonts/fraunces-italic-latin-v${frauncesRelease}.woff2`,
 ];
+
+const promotedFraunces = {
+  output: `assets/fonts/fraunces-italic-latin-v${frauncesRelease}.woff2`,
+  bytes: 29108,
+  sha256: 'e2558fd78e6d88b32ce13926b4e203022aaa1c4a45d0f997833bbb8de4d8aadc',
+};
+
+const retainedFraunces = {
+  output: `assets/fonts/fraunces-italic-latin-v${release}.woff2`,
+  bytes: 81520,
+  sha256: '066710ce7ed235a339d3d6cdcc8b55c0bea5632232662d83aacea25852108271',
+};
 
 const expectedLicenses = [
   'assets/fonts/OFL-Inter.txt',
@@ -1317,13 +1331,20 @@ test('legacy heavy assets are absent after references move', () => {
 });
 
 test('self-hosted fonts replace Google Fonts with exactly two preloads', () => {
-  for (const relative of [...expectedFonts, ...expectedLicenses]) {
+  for (const relative of [...expectedFonts, retainedFraunces.output, ...expectedLicenses]) {
     assert.equal(exists(relative), true, `${relative} must exist`);
     assert.ok(size(relative) > 0, `${relative} must be non-empty`);
   }
 
+  assert.equal(size(promotedFraunces.output), promotedFraunces.bytes, 'promoted Fraunces bytes');
+  assert.equal(sha256(promotedFraunces.output), promotedFraunces.sha256, 'promoted Fraunces SHA-256');
+  assert.equal(size(retainedFraunces.output), retainedFraunces.bytes, 'retained Fraunces bytes');
+  assert.equal(sha256(retainedFraunces.output), retainedFraunces.sha256, 'retained Fraunces SHA-256');
+
   const tokenCss = read('assets/tokens.css');
   assert.doesNotMatch(tokenCss, /fonts\.(?:googleapis|gstatic)\.com/i);
+  assert.match(tokenCss, new RegExp(escapeRegex('/' + promotedFraunces.output)), 'active promoted Fraunces URL');
+  assert.doesNotMatch(tokenCss, new RegExp(escapeRegex('/' + retainedFraunces.output)), 'retained Fraunces is compatibility-only');
   for (const family of ['Inter', 'Space Grotesk', 'JetBrains Mono', 'Fraunces']) {
     assert.match(tokenCss, new RegExp(`font-family:\\s*['\"]${escapeRegex(family)}['\"]`, 'i'));
   }
@@ -1438,7 +1459,7 @@ test('homepage embeds exact revisioned CSS while other routes retain linked styl
   const markedStyles = tags(home, 'style')
     .filter((tag) => /\bdata-homepage-styles\b/i.test(tag));
   assert.equal(markedStyles.length, 1, 'homepage marked style count');
-  assert.equal(attr(markedStyles[0], 'data-tokens-revision'), '2');
+  assert.equal(attr(markedStyles[0], 'data-tokens-revision'), tokensRevision);
   assert.equal(attr(markedStyles[0], 'data-styles-revision'), '3');
 
   const networkStyles = tags(home, 'link').filter((tag) => {
@@ -1475,7 +1496,7 @@ test('homepage embeds exact revisioned CSS while other routes retain linked styl
       .map((tag) => attr(tag, 'href'));
     assert.deepEqual(
       stylesheets,
-      ['/assets/tokens.css?v=2', '/css/styles.css?v=3'],
+      [`/assets/tokens.css?v=${tokensRevision}`, '/css/styles.css?v=3'],
       file + ' revised stylesheets',
     );
   }
@@ -1486,7 +1507,7 @@ test('immutable cache policy applies only to release-versioned assets', () => {
     const stylesheets = tags(read(file), 'link')
       .filter((tag) => attr(tag, 'rel') === 'stylesheet')
       .map((tag) => attr(tag, 'href'));
-    assert.deepEqual(stylesheets, ['/assets/tokens.css?v=2', '/css/styles.css?v=3'], `${file} revised stylesheets`);
+    assert.deepEqual(stylesheets, [`/assets/tokens.css?v=${tokensRevision}`, '/css/styles.css?v=3'], `${file} revised stylesheets`);
   }
   const homeScripts = tags(read('index.html'), 'script').map((tag) => attr(tag, 'src')).filter(Boolean);
   assert.deepEqual(homeScripts, [], 'homepage runtime must remain dynamically scheduled');
@@ -1501,6 +1522,7 @@ test('immutable cache policy applies only to release-versioned assets', () => {
   const paths = [
     ...expectedVideos.map((item) => `/${item.output}`),
     ...expectedFonts.map((item) => `/${item}`),
+    `/${retainedFraunces.output}`,
     ...expectedImages.map((item) => `/${item.output}`),
   ];
   for (const assetPath of paths) {
