@@ -19,38 +19,7 @@
     el.appendChild(span);
     return span;
   }
-  var heroRise = $$('.hero .rise').map(wrapRise);
   var titleRise = $$('[data-rise]').map(function (el) { return { el: el, inner: wrapRise(el) }; });
-
-  /* ---- preloader ---- */
-  function revealHero() {
-    if (!window.gsap || reduce) { heroRise.forEach(function (s) { s.style.opacity = 1; s.style.transform = 'none'; }); return; }
-    gsap.from(heroRise, { y: 34, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 });
-    setTimeout(function () {
-      try { gsap.killTweensOf(heroRise); } catch (e) {}
-      heroRise.forEach(function (s) { s.style.opacity = 1; s.style.transform = 'none'; });
-    }, 2400);
-  }
-  (function preloader() {
-    var pre = $('#preloader'), n = $('#pre-count-n');
-    if (!pre) { revealHero(); return; }
-    var finished = false;
-    function done() {
-      if (finished) return;
-      finished = true;
-      pre.classList.add('done');
-      setTimeout(function () { pre.style.display = 'none'; }, reduce ? 0 : 380);
-      revealHero();
-    }
-    if (reduce) { if (n) n.textContent = '100'; setTimeout(done, 150); return; }
-    var dur = 450, t0 = performance.now();
-    (function tick(t) {
-      var p = Math.min((t - t0) / dur, 1);
-      if (n) n.textContent = Math.round(p * 100);
-      if (p < 1) requestAnimationFrame(tick); else setTimeout(done, 60);
-    })(t0);
-    setTimeout(done, 900);
-  })();
 
   /* ---- custom cursor ---- */
   if (fine && !reduce) {
@@ -130,6 +99,7 @@
   window.addEventListener('scroll', onScroll, { passive: true });
 
   /* ---- GSAP reveals + line masks + pinned process ---- */
+  var revealEls = $$('[data-reveal]').filter(function (el) { return !el.closest('.hero'); });
   var hasGsap = window.gsap && window.ScrollTrigger;
   if (hasGsap && !reduce) {
     gsap.registerPlugin(ScrollTrigger);
@@ -146,7 +116,7 @@
     window.addEventListener('load', scheduleRefresh);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleRefresh);
 
-    $$('[data-reveal]').forEach(function (el) {
+    revealEls.forEach(function (el) {
       gsap.fromTo(el, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 86%' } });
     });
     $$('[data-reveal-group]').forEach(function (grp) {
@@ -159,7 +129,7 @@
     });
 
   } else {
-    $$('[data-reveal]').forEach(function (el) { el.style.opacity = 1; });
+    revealEls.forEach(function (el) { el.style.opacity = 1; });
     $$('[data-reveal-group]').forEach(function (grp) { Array.prototype.slice.call(grp.children).forEach(function (c) { c.style.opacity = 1; }); });
     titleRise.forEach(function (o) { o.el.style.opacity = 1; });
   }

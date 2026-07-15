@@ -53,6 +53,14 @@ const expectedLicenses = [
   'assets/fonts/OFL-Fraunces.txt',
 ];
 
+const expectedRuntimeUrls = [
+  'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js',
+  'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js',
+  'js/main.js?v=4',
+  'js/ambient.js?v=2',
+];
+
 const legacyAssets = [
   'assets/video/city-loop.mp4',
   'assets/video/t1.mp4',
@@ -91,6 +99,13 @@ test('attribute parser distinguishes data-src from src', () => {
 
 function tags(html, name) {
   return html.match(new RegExp(`<${name}\\b[^>]*>`, 'gi')) ?? [];
+}
+
+function inlineScriptSource(html, marker) {
+  const pattern = new RegExp(`<script\\s+${escapeRegex(marker)}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>`, 'gi');
+  const matches = [...html.matchAll(pattern)];
+  assert.equal(matches.length, 1, `expected exactly one inline ${marker} script`);
+  return matches[0][1];
 }
 
 function fps(value) {
@@ -321,6 +336,426 @@ function createAmbientHarness() {
   };
 }
 
+class CriticalClassList {
+  constructor(element) {
+    this.element = element;
+  }
+
+  values() {
+    return this.element.className.split(/\s+/).filter(Boolean);
+  }
+
+  add(value) {
+    const values = new Set(this.values());
+    values.add(value);
+    this.element.className = [...values].join(' ');
+  }
+
+  contains(value) {
+    return this.values().includes(value);
+  }
+}
+
+class CriticalNode {
+  constructor(text = '') {
+    this.textContent = text;
+    this.parentNode = null;
+  }
+}
+
+class CriticalElement extends CriticalNode {
+  constructor(className = '', top = 0) {
+    super('');
+    this.className = className;
+    this.top = top;
+    this.childNodes = [];
+    this.style = {};
+    this.classList = new CriticalClassList(this);
+  }
+
+  get children() {
+    return this.childNodes.filter((node) => node instanceof CriticalElement);
+  }
+
+  get firstChild() {
+    return this.childNodes[0] ?? null;
+  }
+
+  get firstElementChild() {
+    return this.children[0] ?? null;
+  }
+
+  appendChild(node) {
+    if (node.parentNode) {
+      const index = node.parentNode.childNodes.indexOf(node);
+      if (index >= 0) node.parentNode.childNodes.splice(index, 1);
+    }
+    node.parentNode = this;
+    this.childNodes.push(node);
+    return node;
+  }
+
+  getBoundingClientRect() {
+    return { top: this.top };
+  }
+}
+
+function createCriticalHarness({ reduce = false, missingPreloader = false, revealTops = [100, 100, 100, 100, 100] } = {}) {
+  let now = 0;
+  let nextId = 1;
+  let raf = null;
+  let maxPendingRaf = 0;
+  const timers = [];
+  const rises = [new CriticalElement('rise'), new CriticalElement('rise')];
+  rises[0].appendChild(new CriticalNode('Find the gaps.'));
+  rises[1].appendChild(new CriticalNode('Automate them.'));
+  const reveals = revealTops.map((top) => new CriticalElement('hero-reveal', top));
+  const preloader = missingPreloader ? null : new CriticalElement('preloader');
+  const counter = missingPreloader ? null : new CriticalElement();
+  const listeners = new Map();
+  if (counter) counter.textContent = '0';
+
+  function setTimeoutFake(callback, delay = 0) {
+    const id = nextId++;
+    timers.push({ id, due: now + delay, callback });
+    return id;
+  }
+
+  function requestAnimationFrameFake(callback) {
+    assert.equal(raf, null, 'critical bootstrap must never queue more than one rAF');
+    raf = { id: nextId++, callback };
+    maxPendingRaf = Math.max(maxPendingRaf, 1);
+    return raf.id;
+  }
+
+  function cancelAnimationFrameFake(id) {
+    if (raf?.id === id) raf = null;
+  }
+
+  function runTimersThrough(target) {
+    while (true) {
+      timers.sort((a, b) => a.due - b.due);
+      const timer = timers[0];
+      if (!timer || timer.due > target) break;
+      timers.shift();
+      now = timer.due;
+      timer.callback();
+    }
+  }
+
+  function frame(target) {
+    runTimersThrough(target);
+    now = target;
+    if (raf) {
+      const current = raf;
+      raf = null;
+      current.callback(target);
+    }
+    runTimersThrough(target);
+  }
+
+  const document = {
+    createElement: () => new CriticalElement(),
+    querySelector(selector) {
+      if (selector === '#preloader') return preloader;
+      if (selector === '#pre-count-n') return counter;
+      return null;
+    },
+    querySelectorAll(selector) {
+      if (selector === '.hero .rise') return rises;
+      if (selector === '.hero [data-reveal]') return reveals;
+      return [];
+    },
+  };
+  const window = {
+    innerHeight: 1000,
+    matchMedia: () => ({ matches: reduce }),
+    addEventListener(type, callback, options) {
+      const entries = listeners.get(type) ?? [];
+      entries.push({ callback, options });
+      listeners.set(type, entries);
+    },
+    removeEventListener(type, callback) {
+      const entries = listeners.get(type) ?? [];
+      listeners.set(type, entries.filter((entry) => entry.callback !== callback));
+    },
+  };
+  const context = vm.createContext({
+    window,
+    document,
+    performance: { now: () => now },
+    requestAnimationFrame: requestAnimationFrameFake,
+    cancelAnimationFrame: cancelAnimationFrameFake,
+    setTimeout: setTimeoutFake,
+    Math,
+    Array,
+  });
+
+  return {
+    context,
+    rises,
+    reveals,
+    preloader,
+    counter,
+    frame,
+    pendingRaf: () => Boolean(raf),
+    maxPendingRaf: () => maxPendingRaf,
+    emit(type) {
+      for (const entry of [...(listeners.get(type) ?? [])]) entry.callback();
+    },
+    listenerCount(type) {
+      return (listeners.get(type) ?? []).length;
+    },
+    listenerOptions(type) {
+      return (listeners.get(type) ?? []).map((entry) => entry.options);
+    },
+  };
+}
+
+function criticalTranslateY(style) {
+  if (style.transform === 'none') return 0;
+  const match = String(style.transform).match(/translateY\(([-\d.]+)px\)/);
+  assert.ok(match, `expected translateY transform, got ${style.transform}`);
+  return Number(match[1]);
+}
+
+class RuntimeTarget {
+  constructor() {
+    this.listeners = new Map();
+  }
+
+  addEventListener(type, callback, options) {
+    const entries = this.listeners.get(type) ?? [];
+    entries.push({ callback, options, capture: options === true || Boolean(options?.capture) });
+    this.listeners.set(type, entries);
+  }
+
+  removeEventListener(type, callback, options) {
+    const entries = this.listeners.get(type) ?? [];
+    const capture = options === true || Boolean(options?.capture);
+    this.listeners.set(type, entries.filter((entry) => entry.callback !== callback || entry.capture !== capture));
+  }
+
+  dispatch(type, event = {}) {
+    for (const entry of [...(this.listeners.get(type) ?? [])]) entry.callback({ type, ...event });
+  }
+
+  listenerCount(type) {
+    return (this.listeners.get(type) ?? []).length;
+  }
+
+  listenerOptions(type) {
+    return (this.listeners.get(type) ?? []).map((entry) => entry.options);
+  }
+}
+
+class RuntimeScript extends RuntimeTarget {
+  constructor() {
+    super();
+    this.async = true;
+    this.src = '';
+  }
+}
+
+function createRuntimeHarness({ hash = '', scrollY = 0, hidden = false, titlesFinal = false, sectionTop = -120 } = {}) {
+  let now = 0;
+  let nextId = 1;
+  let rafQueue = [];
+  const timers = [];
+  const appended = [];
+  const network = new Map();
+  const execution = [];
+  let nextExecution = 0;
+  const mutationObservers = [];
+  const titles = Array.from({ length: 2 }, () => ({
+    style: titlesFinal ? { opacity: '1', transform: 'none' } : { opacity: '0', transform: 'translateY(34px)' },
+  }));
+  function createHashTarget(id) {
+    return {
+      id,
+      scrollCalls: [],
+      scrollIntoView(options) {
+        this.scrollCalls.push(options);
+      },
+    };
+  }
+  const hashTargets = new Map([
+    ['#pricing', createHashTarget('pricing')],
+    ['#book', createHashTarget('book')],
+  ]);
+  const hashTarget = hashTargets.get('#pricing');
+  const bookTarget = hashTargets.get('#book');
+  const restoreSection = {
+    id: 'pricing',
+    top: sectionTop,
+    getBoundingClientRect() {
+      return { top: this.top, bottom: this.top + 900 };
+    },
+  };
+
+  class FakeMutationObserver {
+    constructor(callback) {
+      this.callback = callback;
+      this.connected = false;
+      mutationObservers.push(this);
+    }
+
+    observe() {
+      this.connected = true;
+    }
+
+    disconnect() {
+      this.connected = false;
+    }
+  }
+
+  const window = new RuntimeTarget();
+  window.scrollY = scrollY;
+  window.innerHeight = 1000;
+  window.scrollCalls = [];
+  window.scrollBy = (options) => {
+    window.scrollCalls.push(options);
+    window.scrollY += Number(options.top) || 0;
+  };
+  const location = { hash };
+  window.location = location;
+  const document = new RuntimeTarget();
+  document.hidden = hidden;
+  document.querySelectorAll = (selector) => {
+    if (selector === '.hero .rise > .rise-i') return titles;
+    if (selector === 'main section[id]') return [restoreSection];
+    return [];
+  };
+  document.querySelector = (selector) => hashTargets.get(selector) ?? null;
+  document.createElement = (tag) => {
+    assert.equal(tag, 'script');
+    return new RuntimeScript();
+  };
+  document.head = {
+    appendChild(script) {
+      appended.push(script);
+      return script;
+    },
+  };
+  document.documentElement = document.head;
+
+  function setTimeoutFake(callback, delay = 0) {
+    const id = nextId++;
+    timers.push({ id, due: now + delay, callback, cancelled: false });
+    return id;
+  }
+
+  function clearTimeoutFake(id) {
+    const timer = timers.find((item) => item.id === id);
+    if (timer) timer.cancelled = true;
+  }
+
+  function advanceTimers(target) {
+    while (true) {
+      timers.sort((a, b) => a.due - b.due);
+      const timer = timers.find((item) => !item.cancelled && item.due <= target);
+      if (!timer) break;
+      timers.splice(timers.indexOf(timer), 1);
+      now = timer.due;
+      timer.callback();
+    }
+    now = target;
+  }
+
+  function requestAnimationFrameFake(callback) {
+    const id = nextId++;
+    rafQueue.push({ id, callback });
+    return id;
+  }
+
+  function frame(target = now + 16) {
+    advanceTimers(target);
+    const callbacks = rafQueue;
+    rafQueue = [];
+    for (const item of callbacks) item.callback(target);
+  }
+
+  function flushMutation() {
+    for (const observer of mutationObservers) {
+      if (observer.connected) observer.callback([]);
+    }
+  }
+
+  function flushExecution() {
+    while (network.has(nextExecution)) {
+      const ok = network.get(nextExecution);
+      const script = appended[nextExecution];
+      execution.push({ url: script.src, status: ok ? 'loaded' : 'error' });
+      script.dispatch(ok ? 'load' : 'error', ok ? {} : { message: 'forced failure' });
+      nextExecution++;
+    }
+  }
+
+  function completeNetwork(index, ok = true) {
+    network.set(index, ok);
+    flushExecution();
+  }
+
+  const context = vm.createContext({
+    window,
+    document,
+    location,
+    MutationObserver: FakeMutationObserver,
+    performance: { now: () => now },
+    requestAnimationFrame: requestAnimationFrameFake,
+    setTimeout: setTimeoutFake,
+    clearTimeout: clearTimeoutFake,
+    Array,
+    Math,
+  });
+
+  return {
+    context,
+    window,
+    document,
+    titles,
+    hashTarget,
+    bookTarget,
+    hashTargets,
+    restoreSection,
+    appended,
+    execution,
+    frame,
+    advanceTimers,
+    flushMutation,
+    completeNetwork,
+    pendingRaf: () => rafQueue.length,
+    setTitlesFinal() {
+      for (const title of titles) {
+        title.style.opacity = '1';
+        title.style.transform = 'none';
+      }
+      flushMutation();
+    },
+  };
+}
+
+function runRuntimeLoader(options) {
+  const harness = createRuntimeHarness(options);
+  vm.runInContext(inlineScriptSource(read('index.html'), 'data-runtime-loader'), harness.context);
+  return harness;
+}
+
+function runtimeHashClickTarget(href) {
+  const anchor = {
+    getAttribute(name) {
+      assert.equal(name, 'href');
+      return href;
+    },
+  };
+  return {
+    closest(selector) {
+      assert.equal(selector, 'a[href^="#"]');
+      return anchor;
+    },
+  };
+}
+
 test('chapter media state machine ignores stale resume rejection', () => {
   const harness = createAmbientHarness();
   const chapterOne = harness.media['ch-t1'];
@@ -401,6 +836,398 @@ test('chapter media state machine ignores stale load errors', () => {
   assert.equal(chapterTwo.playAttempts.length, 1);
   assert.equal(chapterTwo.classList.contains('active'), true);
   assert.equal(harness.body.classList.contains('chapter-on'), true);
+});
+
+test('homepage places one critical bootstrap before one post-paint loader with no static runtime requests', () => {
+  const home = read('index.html');
+  const critical = inlineScriptSource(home, 'data-critical-bootstrap');
+  const loader = inlineScriptSource(home, 'data-runtime-loader');
+  assert.ok(critical.trim().length > 0, 'critical bootstrap must not be empty');
+  assert.ok(loader.trim().length > 0, 'runtime loader must not be empty');
+
+  const footerEnd = home.indexOf('</footer>');
+  const criticalIndex = home.indexOf('<script data-critical-bootstrap>');
+  const loaderIndex = home.indexOf('<script data-runtime-loader>');
+  const bodyEnd = home.indexOf('</body>');
+  assert.ok(footerEnd >= 0 && footerEnd < criticalIndex, 'critical bootstrap must be after page content');
+  assert.ok(criticalIndex < loaderIndex, 'critical bootstrap must precede runtime loader');
+  assert.ok(loaderIndex < bodyEnd, 'runtime loader must remain inside body');
+
+  const networkScripts = tags(home, 'script').filter((tag) => attr(tag, 'src'));
+  assert.deepEqual(networkScripts, [], 'runtime scripts must not be statically network-bearing');
+});
+
+test('main.js transfers hero and preloader ownership while preserving below-fold reveal ownership', () => {
+  const main = read('js/main.js');
+  assert.doesNotMatch(main, /var heroRise\s*=/);
+  assert.doesNotMatch(main, /function revealHero\s*\(/);
+  assert.doesNotMatch(main, /function preloader\s*\(/);
+  assert.doesNotMatch(main, /['"]#preloader['"]/);
+  assert.doesNotMatch(main, /['"]#pre-count-n['"]/);
+  assert.match(main, /var revealEls\s*=\s*\$\$\('\[data-reveal\]'\)\.filter\(function \(el\) \{ return !el\.closest\('\.hero'\); \}\);/);
+  assert.equal((main.match(/revealEls\.forEach/g) ?? []).length, 2, 'normal and fallback paths must share the same non-hero reveal set');
+  assert.doesNotMatch(main, /\$\$\('\[data-reveal\]'\)\.forEach/);
+});
+
+test('critical bootstrap preserves exact normal timing, distances, easing curves, and bounded scheduling', () => {
+  const source = inlineScriptSource(read('index.html'), 'data-critical-bootstrap');
+  const harness = createCriticalHarness();
+  vm.runInContext(source, harness.context);
+
+  assert.equal(harness.counter.textContent, '0');
+  for (const reveal of harness.reveals) {
+    assert.equal(reveal.style.opacity, '0');
+    assert.equal(criticalTranslateY(reveal.style), 24);
+  }
+  for (const rise of harness.rises) {
+    assert.equal(rise.children.length, 1);
+    assert.equal(rise.firstElementChild.className, 'rise-i');
+    assert.equal(rise.firstElementChild.style.opacity, '0');
+    assert.equal(criticalTranslateY(rise.firstElementChild.style), 34);
+  }
+
+  harness.frame(350);
+  assert.ok(Math.abs(Number(harness.reveals[0].style.opacity) - 0.875) < 0.000001, '700 ms Power2-out reveal must be 0.875 at halfway');
+  assert.ok(Math.abs(criticalTranslateY(harness.reveals[0].style) - 3) < 0.000001);
+
+  harness.frame(450);
+  assert.equal(harness.counter.textContent, '100');
+  assert.equal(harness.preloader.classList.contains('done'), false);
+  harness.frame(509);
+  assert.equal(harness.preloader.classList.contains('done'), false);
+  harness.frame(510);
+  assert.equal(harness.preloader.classList.contains('done'), true, '450 ms counter plus 60 ms hold must dismiss preloader');
+
+  harness.frame(700);
+  for (const reveal of harness.reveals) {
+    assert.equal(reveal.style.opacity, '1');
+    assert.equal(reveal.style.transform, 'none');
+  }
+
+  harness.frame(890);
+  assert.equal(harness.preloader.style.display, 'none', 'preloader display removal must retain the 380 ms transition allowance');
+  harness.frame(960);
+  const firstTitle = harness.rises[0].firstElementChild;
+  assert.ok(Math.abs(Number(firstTitle.style.opacity) - 0.9375) < 0.000001, '900 ms Power3-out rise must be 0.9375 at halfway');
+  assert.ok(Math.abs(criticalTranslateY(firstTitle.style) - 2.125) < 0.000001);
+
+  harness.frame(1410);
+  assert.equal(harness.rises[0].firstElementChild.style.transform, 'none');
+  assert.notEqual(harness.rises[1].firstElementChild.style.transform, 'none', 'second title must retain the exact 120 ms stagger');
+  harness.frame(1530);
+  for (const rise of harness.rises) {
+    assert.equal(rise.children.length, 1, 'each hero line must be wrapped exactly once');
+    assert.equal(rise.firstElementChild.style.opacity, '1');
+    assert.equal(rise.firstElementChild.style.transform, 'none');
+  }
+  assert.equal(harness.pendingRaf(), false, 'critical scheduler must stop after all work completes');
+  assert.equal(harness.maxPendingRaf(), 1, 'critical scheduler must queue at most one animation frame');
+  harness.frame(2910);
+  assert.equal(harness.pendingRaf(), false, '2400 ms safety finalization must not replay completed work');
+});
+
+test('critical hero reveals use the exact 86 percent threshold once and clean up guards', () => {
+  const source = inlineScriptSource(read('index.html'), 'data-critical-bootstrap');
+  const harness = createCriticalHarness({ revealTops: [100, 900, -200, 100, 100] });
+  vm.runInContext(source, harness.context);
+
+  assert.equal(harness.listenerCount('scroll'), 1);
+  assert.equal(harness.listenerCount('resize'), 1);
+  assert.equal(harness.listenerOptions('scroll')[0]?.passive, true);
+  assert.equal(harness.listenerOptions('resize')[0]?.passive, true);
+
+  harness.frame(450);
+  harness.frame(510);
+  harness.frame(700);
+  assert.equal(harness.reveals[0].style.transform, 'none');
+  assert.equal(harness.reveals[2].style.transform, 'none', 'already-passed deep-scroll content must be exposed');
+  assert.equal(harness.reveals[1].style.opacity, '0');
+  assert.equal(criticalTranslateY(harness.reveals[1].style), 24);
+
+  harness.reveals[1].top = 860;
+  harness.emit('scroll');
+  harness.frame(800);
+  assert.equal(harness.reveals[1].style.opacity, '0', 'the crossing frame must be the one-shot animation start');
+  assert.equal(harness.listenerCount('scroll'), 0);
+  assert.equal(harness.listenerCount('resize'), 0);
+  harness.frame(1150);
+  assert.ok(Math.abs(Number(harness.reveals[1].style.opacity) - 0.875) < 0.000001);
+  assert.ok(Math.abs(criticalTranslateY(harness.reveals[1].style) - 3) < 0.000001);
+  harness.frame(1530);
+  assert.equal(harness.reveals[1].style.opacity, '1');
+  assert.equal(harness.reveals[1].style.transform, 'none');
+  assert.equal(harness.pendingRaf(), false);
+
+  harness.reveals[1].top = 900;
+  harness.emit('scroll');
+  assert.equal(harness.pendingRaf(), false, 'completed reveal must not replay after leaving the threshold');
+  assert.equal(harness.reveals[1].style.transform, 'none');
+});
+
+test('critical bootstrap exposes complete hero content for reduced motion and missing-preloader fallback', () => {
+  const source = inlineScriptSource(read('index.html'), 'data-critical-bootstrap');
+  for (const options of [{ reduce: true }, { missingPreloader: true }]) {
+    const harness = createCriticalHarness(options);
+    vm.runInContext(source, harness.context);
+    for (const reveal of harness.reveals) {
+      assert.equal(reveal.style.opacity, '1');
+      assert.equal(reveal.style.transform, 'none');
+    }
+    for (const rise of harness.rises) {
+      assert.equal(rise.children.length, 1);
+      assert.equal(rise.firstElementChild.style.opacity, '1');
+      assert.equal(rise.firstElementChild.style.transform, 'none');
+    }
+    assert.equal(harness.pendingRaf(), false);
+    if (options.reduce) {
+      assert.equal(harness.counter.textContent, '100');
+      harness.frame(150);
+      assert.equal(harness.preloader.classList.contains('done'), true);
+      assert.equal(harness.preloader.style.display, 'none');
+    }
+  }
+});
+
+test('idle runtime startup waits for stable titles plus exactly two paint frames', () => {
+  const harness = runRuntimeLoader();
+  assert.equal(harness.appended.length, 0);
+  harness.setTitlesFinal();
+  assert.equal(harness.appended.length, 0);
+  assert.equal(harness.pendingRaf(), 1);
+  harness.frame(16);
+  assert.equal(harness.appended.length, 0, 'first stable-title frame must not start runtime');
+  harness.frame(32);
+  assert.deepEqual(harness.appended.map((script) => script.src), expectedRuntimeUrls);
+  assert.ok(harness.appended.every((script) => script.async === false));
+  assert.equal(harness.window.__etRuntimeLoader.reason, 'critical-ready');
+  for (const type of ['pointerdown', 'wheel', 'touchstart', 'keydown', 'scroll', 'pageshow']) {
+    assert.equal(harness.window.listenerCount(type), 0, `${type} guard must be removed after startup`);
+  }
+  assert.equal(harness.document.listenerCount('visibilitychange'), 0);
+});
+
+test('runtime loader starts once for every approved early path and ignores modifier-only keydown', () => {
+  for (const type of ['pointerdown', 'wheel', 'touchstart', 'keydown']) {
+    const harness = runRuntimeLoader();
+    harness.window.dispatch(type, type === 'keydown' ? { key: 'ArrowDown' } : {});
+    assert.equal(harness.appended.length, 5, type);
+    harness.window.dispatch('wheel');
+    harness.advanceTimers(3000);
+    assert.equal(harness.appended.length, 5, `${type} startup must remain one-shot`);
+  }
+
+  const modifier = runRuntimeLoader();
+  modifier.window.dispatch('keydown', { key: 'Shift', shiftKey: true });
+  assert.equal(modifier.appended.length, 0, 'modifier-only keydown must not start runtime');
+
+  assert.equal(runRuntimeLoader({ hash: '#pricing' }).window.__etRuntimeLoader.reason, 'initial-hash');
+  assert.equal(runRuntimeLoader({ scrollY: 640 }).window.__etRuntimeLoader.reason, 'initial-scroll');
+  assert.equal(runRuntimeLoader({ hidden: true }).window.__etRuntimeLoader.reason, 'hidden-document');
+
+  const pageshow = runRuntimeLoader();
+  pageshow.window.scrollY = 480;
+  pageshow.window.dispatch('pageshow');
+  assert.equal(pageshow.window.__etRuntimeLoader.reason, 'pageshow-scroll');
+
+  const restored = runRuntimeLoader();
+  restored.window.scrollY = 480;
+  restored.window.dispatch('scroll');
+  assert.equal(restored.window.__etRuntimeLoader.reason, 'restored-scroll');
+
+  const safety = runRuntimeLoader();
+  safety.advanceTimers(2999);
+  assert.equal(safety.appended.length, 0);
+  safety.advanceTimers(3000);
+  assert.equal(safety.appended.length, 5);
+  assert.equal(safety.window.__etRuntimeLoader.reason, 'safety');
+});
+
+test('runtime scripts retain async false and execute in declaration order after reversed completion', () => {
+  const harness = runRuntimeLoader({ hash: '#pricing' });
+  assert.deepEqual(harness.appended.map((script) => script.async), [false, false, false, false, false]);
+  for (const index of [4, 3, 2, 1]) harness.completeNetwork(index, true);
+  assert.deepEqual(harness.execution, []);
+  harness.completeNetwork(0, true);
+  assert.deepEqual(harness.execution, expectedRuntimeUrls.map((url) => ({ url, status: 'loaded' })));
+  assert.equal(harness.window.__etRuntimeLoader.status, 'complete');
+  assert.equal(Array.from(harness.window.__etRuntimeLoader.scripts, (entry) => entry.state).join(','), 'loaded,loaded,loaded,loaded,loaded');
+});
+
+test('runtime loader records a failed CDN dependency and continues through both local scripts', () => {
+  const harness = runRuntimeLoader({ hash: '#pricing' });
+  for (const index of [4, 3, 1, 0]) harness.completeNetwork(index, true);
+  harness.completeNetwork(2, false);
+  assert.deepEqual(harness.execution.map((entry) => entry.url), expectedRuntimeUrls);
+  assert.equal(harness.execution[2].status, 'error');
+  assert.deepEqual(harness.execution.slice(3), expectedRuntimeUrls.slice(3).map((url) => ({ url, status: 'loaded' })));
+  assert.equal(harness.window.__etRuntimeLoader.status, 'complete-with-errors');
+  assert.equal(harness.window.__etRuntimeLoader.scripts[2].state, 'error');
+  assert.equal(Array.from(harness.window.__etRuntimeLoader.scripts).slice(3).map((entry) => entry.state).join(','), 'loaded,loaded');
+});
+
+test('runtime loader realigns an initial hash after two post-runtime layout frames', () => {
+  const harness = runRuntimeLoader({ hash: '#pricing' });
+  for (const index of [4, 3, 2, 1, 0]) harness.completeNetwork(index, true);
+  assert.equal(harness.window.__etRuntimeLoader.status, 'complete');
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(16);
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(32);
+  assert.equal(harness.hashTarget.scrollCalls.length, 1);
+  assert.equal(harness.hashTarget.scrollCalls[0].block, 'start');
+  assert.equal(harness.hashTarget.scrollCalls[0].behavior, 'auto');
+  assert.equal(harness.window.__etRuntimeLoader.hashAlignedAt, 32);
+});
+
+test('post-interaction hash alignment applies only to a changed actionable hash', () => {
+  const harness = runRuntimeLoader();
+  harness.window.dispatch('pointerdown');
+  assert.equal(harness.window.__etRuntimeLoader.reason, 'interaction-pointerdown');
+  harness.window.location.hash = '#pricing';
+  for (const index of [4, 3, 2, 1, 0]) harness.completeNetwork(index, true);
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(16);
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(32);
+  assert.equal(harness.hashTarget.scrollCalls.length, 1);
+  assert.equal(harness.hashTarget.scrollCalls[0].block, 'start');
+  assert.equal(harness.hashTarget.scrollCalls[0].behavior, 'auto');
+  assert.equal(harness.window.__etRuntimeLoader.hashAlignedAt, 32);
+
+  for (const hash of ['#', '#top', '#hero']) {
+    const ignored = runRuntimeLoader();
+    ignored.window.dispatch('pointerdown');
+    ignored.window.location.hash = hash;
+    for (const index of [4, 3, 2, 1, 0]) ignored.completeNetwork(index, true);
+    ignored.frame(16);
+    ignored.frame(32);
+    assert.equal(ignored.hashTarget.scrollCalls.length, 0, `${hash} must not be realigned`);
+    assert.equal(ignored.window.__etRuntimeLoader.hashAlignedAt, null);
+  }
+});
+
+test('runtime aligns capture-phase click intent without treating pointerdown as intent', () => {
+  const clickTarget = runtimeHashClickTarget('#pricing');
+  const cancelled = runRuntimeLoader();
+  assert.equal(cancelled.document.listenerCount('click'), 1);
+  assert.equal(cancelled.document.listenerOptions('click')[0], true, 'click intent listener must run in capture phase');
+  cancelled.window.dispatch('pointerdown', { target: clickTarget });
+  for (const index of [0, 1, 2, 3, 4]) cancelled.completeNetwork(index, true);
+  assert.equal(cancelled.document.listenerCount('click'), 0, 'completion must remove the temporary click listener');
+  cancelled.frame(16);
+  cancelled.frame(32);
+  assert.equal(cancelled.hashTarget.scrollCalls.length, 0, 'a canceled pointer sequence must not create anchor intent');
+
+  const harness = runRuntimeLoader();
+  harness.window.dispatch('pointerdown', { target: clickTarget });
+  for (const index of [0, 1, 2, 3]) harness.completeNetwork(index, true);
+  assert.equal(harness.window.__etRuntimeLoader.scripts[3].state, 'loaded', 'main.js must load before the click');
+  assert.equal(harness.window.__etRuntimeLoader.scripts[4].state, 'loading', 'ambient.js must remain pending through the click');
+  let stopped = 0;
+  let prevented = 0;
+  harness.document.dispatch('click', {
+    target: clickTarget,
+    stopPropagation() { stopped += 1; },
+    preventDefault() { prevented += 1; },
+  });
+  assert.equal(stopped, 1, 'loading-time capture must block the premature main.js handler');
+  assert.equal(prevented, 0, 'native hash default must remain available');
+  assert.equal(harness.window.location.hash, '', 'main-intercepted click must not require a native hash mutation');
+  harness.completeNetwork(4, true);
+  assert.equal(harness.document.listenerCount('click'), 0, 'completion must remove click intent capture before future clicks');
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(16);
+  assert.equal(harness.hashTarget.scrollCalls.length, 0);
+  harness.frame(32);
+  assert.equal(harness.hashTarget.scrollCalls.length, 1);
+  assert.equal(harness.hashTarget.scrollCalls[0].block, 'start');
+  assert.equal(harness.hashTarget.scrollCalls[0].behavior, 'auto');
+  assert.equal(harness.window.__etRuntimeLoader.hashAlignedAt, 32);
+});
+
+test('latest actual hash click outranks an older changed live hash', () => {
+  const harness = runRuntimeLoader();
+  harness.window.dispatch('pointerdown', { target: runtimeHashClickTarget('#pricing') });
+  let firstStopped = 0;
+  let firstPrevented = 0;
+  harness.document.dispatch('click', {
+    target: runtimeHashClickTarget('#pricing'),
+    stopPropagation() { firstStopped += 1; },
+    preventDefault() { firstPrevented += 1; },
+  });
+  assert.equal(firstStopped, 1);
+  assert.equal(firstPrevented, 0);
+  harness.window.location.hash = '#pricing';
+
+  for (const index of [0, 1, 2, 3]) harness.completeNetwork(index, true);
+  let secondStopped = 0;
+  let secondPrevented = 0;
+  harness.document.dispatch('click', {
+    target: runtimeHashClickTarget('#book'),
+    stopPropagation() { secondStopped += 1; },
+    preventDefault() { secondPrevented += 1; },
+  });
+  assert.equal(secondStopped, 1);
+  assert.equal(secondPrevented, 0);
+  assert.equal(harness.window.location.hash, '#pricing', 'test keeps the older native hash to expose precedence');
+
+  harness.completeNetwork(4, true);
+  harness.frame(16);
+  harness.frame(32);
+  assert.equal(harness.hashTarget.scrollCalls.length, 0, 'older Pricing hash must not win');
+  assert.equal(harness.bookTarget.scrollCalls.length, 1, 'latest actual Book click must win');
+  assert.equal(harness.bookTarget.scrollCalls[0].block, 'start');
+  assert.equal(harness.bookTarget.scrollCalls[0].behavior, 'auto');
+  assert.equal(harness.window.__etRuntimeLoader.hashAlignedAt, 32);
+  assert.equal(harness.document.listenerCount('click'), 0);
+});
+
+test('latest ignored hash click suppresses older actionable navigation', () => {
+  for (const ignoredHash of ['#', '#top', '#hero']) {
+    const harness = runRuntimeLoader();
+    harness.window.dispatch('pointerdown', { target: runtimeHashClickTarget('#pricing') });
+    harness.document.dispatch('click', {
+      target: runtimeHashClickTarget('#pricing'),
+      stopPropagation() {},
+      preventDefault() { assert.fail('capture must not prevent native default'); },
+    });
+    harness.window.location.hash = '#pricing';
+    for (const index of [0, 1, 2, 3]) harness.completeNetwork(index, true);
+
+    let stopped = 0;
+    let prevented = 0;
+    harness.document.dispatch('click', {
+      target: runtimeHashClickTarget(ignoredHash),
+      stopPropagation() { stopped += 1; },
+      preventDefault() { prevented += 1; },
+    });
+    assert.equal(stopped, 1, `${ignoredHash} must still bypass premature main.js handling`);
+    assert.equal(prevented, 0, `${ignoredHash} must preserve native default behavior`);
+    harness.completeNetwork(4, true);
+    harness.frame(16);
+    harness.frame(32);
+    assert.equal(harness.hashTarget.scrollCalls.length, 0, `${ignoredHash} must suppress older Pricing alignment`);
+    assert.equal(harness.bookTarget.scrollCalls.length, 0);
+    assert.equal(harness.window.__etRuntimeLoader.hashAlignedAt, null);
+    assert.equal(harness.window.__etRuntimeLoader.restoredAlignedAt, null);
+    assert.equal(harness.document.listenerCount('click'), 0);
+  }
+});
+
+test('runtime loader restores section-relative scroll after two post-runtime layout frames', () => {
+  const harness = runRuntimeLoader({ hash: '#top', scrollY: 640, sectionTop: -120 });
+  assert.equal(harness.window.__etRuntimeLoader.reason, 'initial-scroll');
+  harness.restoreSection.top = 1480;
+  for (const index of [4, 3, 2, 1, 0]) harness.completeNetwork(index, true);
+  harness.frame(16);
+  assert.equal(harness.window.scrollCalls.length, 0);
+  harness.frame(32);
+  assert.equal(harness.window.scrollCalls.length, 1);
+  assert.equal(harness.window.scrollCalls[0].top, 1600);
+  assert.equal(harness.window.scrollCalls[0].left, 0);
+  assert.equal(harness.window.scrollCalls[0].behavior, 'auto');
+  assert.equal(harness.window.__etRuntimeLoader.restoreAnchor, 'pricing');
+  assert.equal(harness.window.__etRuntimeLoader.restoredAlignedAt, 32);
 });
 
 test('only poster permits source-copy byte equality', () => {
@@ -567,10 +1394,6 @@ test('runtime scheduling changes preserve motion constants', () => {
   assert.match(ambient, /start: 'top 60%', end: 'bottom 60%'/);
   assert.match(ambient, /trigger: section, start: 'top top', end: '\+=1600', scrub: true, pin: true, anticipatePin: 1/);
 
-  assert.match(main, /var dur = 450, t0 = performance\.now\(\);/);
-  assert.match(main, /setTimeout\(done, 60\)/);
-  assert.match(main, /setTimeout\(done, 900\)/);
-  assert.match(main, /setTimeout\(done, 150\)/);
   assert.match(main, /var ringRaf = 0;/);
   assert.match(main, /var lenisRaf = 0;/);
   assert.match(main, /function scheduleRefresh\(\)/);
@@ -585,7 +1408,7 @@ test('runtime scheduling changes preserve motion constants', () => {
   assert.doesNotMatch(cssRule(css, '.card'), /will-change/i);
   assert.match(cssRule(css, '.motion-active'), /will-change:transform/);
 
-  assert.match(main, /duration: 0\.9, ease: 'power3\.out', stagger: 0\.12/);
+  assert.match(main, /var revealEls\s*=\s*\$\$\('\[data-reveal\]'\)\.filter\(function \(el\) \{ return !el\.closest\('\.hero'\); \}\);/);
   assert.match(main, /duration: 0\.7, ease: 'power2\.out', scrollTrigger: \{ trigger: el, start: 'top 86%' \}/);
   assert.match(main, /duration: 0\.9, stagger: 0\.09, ease: 'power3\.out'/);
 });
@@ -598,8 +1421,12 @@ test('immutable cache policy applies only to release-versioned assets', () => {
     assert.deepEqual(stylesheets, ['/assets/tokens.css?v=2', '/css/styles.css?v=3'], `${file} revised stylesheets`);
   }
   const homeScripts = tags(read('index.html'), 'script').map((tag) => attr(tag, 'src')).filter(Boolean);
-  assert.ok(homeScripts.includes('js/main.js?v=3'), 'homepage main.js revision');
-  assert.ok(homeScripts.includes('js/ambient.js?v=2'), 'homepage ambient.js revision');
+  assert.deepEqual(homeScripts, [], 'homepage runtime must remain dynamically scheduled');
+  const loader = runRuntimeLoader({ hash: '#pricing' });
+  assert.deepEqual(loader.appended.map((script) => script.src).slice(-2), [
+    'js/main.js?v=4',
+    'js/ambient.js?v=2',
+  ], 'homepage local runtime revisions');
 
   const headers = read('_headers');
   const immutable = 'Cache-Control: public, max-age=31536000, immutable';
