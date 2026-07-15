@@ -13,7 +13,7 @@ const socialImage = `/assets/og-v${release}.jpg`;
 const manifestPath = '.github/performance/media-manifest.json';
 const expectedCssSha256 = {
   'assets/tokens.css': '7fbefe7263d36d70caeb50226fb0c5f4a78031e5de8f8a9638d1bdcb42cb31ac',
-  'css/styles.css': '02c10b8d00c1f5122d328644f8483a13590a0bf1958f277e30e075b376fac045',
+  'css/styles.css': '79ebe674c1ca170fc8f9eca873fdba8b8767b9cf0e9e2a5d480f292cf04e2ae2',
 };
 
 const htmlFiles = [
@@ -1462,7 +1462,11 @@ test('homepage embeds exact revisioned CSS while other routes retain linked styl
   );
 
   for (const [relative, expectedHash] of Object.entries(expectedCssSha256)) {
-    assert.equal(sha256(relative), expectedHash, relative + ' pinned SHA-256');
+    assert.equal(
+      crypto.createHash('sha256').update(normalizeLf(read(relative))).digest('hex'),
+      expectedHash,
+      relative + ' pinned SHA-256',
+    );
   }
 
   for (const file of htmlFiles.filter((relative) => relative !== 'index.html')) {
