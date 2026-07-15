@@ -11,6 +11,10 @@ const release = '20260714';
 const publicBase = 'https://efficientautomate.com';
 const socialImage = `/assets/og-v${release}.jpg`;
 const manifestPath = '.github/performance/media-manifest.json';
+const expectedCssSha256 = {
+  'assets/tokens.css': '7fbefe7263d36d70caeb50226fb0c5f4a78031e5de8f8a9638d1bdcb42cb31ac',
+  'css/styles.css': '02c10b8d00c1f5122d328644f8483a13590a0bf1958f277e30e075b376fac045',
+};
 
 const htmlFiles = [
   'index.html',
@@ -106,6 +110,22 @@ function inlineScriptSource(html, marker) {
   const matches = [...html.matchAll(pattern)];
   assert.equal(matches.length, 1, `expected exactly one inline ${marker} script`);
   return matches[0][1];
+}
+
+function normalizeLf(value) {
+  return value.replace(/\r\n?/g, '\n');
+}
+
+function inlineStyleSource(html, marker) {
+  const stylePattern = /<style\b([^>]*)>([\s\S]*?)<\/style>/gi;
+  const markerPattern = new RegExp(
+    '(?:^|\\s)' + escapeRegex(marker) + '(?:\\s|=|$)',
+    'i',
+  );
+  const matches = [...html.matchAll(stylePattern)]
+    .filter((match) => markerPattern.test(match[1]));
+  assert.equal(matches.length, 1, 'expected exactly one inline ' + marker + ' style');
+  return matches[0][2];
 }
 
 function fps(value) {
@@ -1413,8 +1433,52 @@ test('runtime scheduling changes preserve motion constants', () => {
   assert.match(main, /duration: 0\.9, stagger: 0\.09, ease: 'power3\.out'/);
 });
 
+test('homepage embeds exact revisioned CSS while other routes retain linked styles', () => {
+  const home = read('index.html');
+  const markedStyles = tags(home, 'style')
+    .filter((tag) => /\bdata-homepage-styles\b/i.test(tag));
+  assert.equal(markedStyles.length, 1, 'homepage marked style count');
+  assert.equal(attr(markedStyles[0], 'data-tokens-revision'), '2');
+  assert.equal(attr(markedStyles[0], 'data-styles-revision'), '3');
+
+  const networkStyles = tags(home, 'link').filter((tag) => {
+    const rel = attr(tag, 'rel');
+    return rel === 'stylesheet' || (rel === 'preload' && attr(tag, 'as') === 'style');
+  });
+  assert.deepEqual(networkStyles, [], 'homepage must not request an external stylesheet');
+
+  const wrapped = normalizeLf(inlineStyleSource(home, 'data-homepage-styles'));
+  assert.equal(wrapped.startsWith('\n'), true, 'inline style opening structural newline');
+  assert.equal(wrapped.endsWith('\n'), true, 'inline style closing structural newline');
+  const embedded = wrapped.slice(1, -1);
+  const expected =
+    normalizeLf(read('assets/tokens.css')) +
+    '\n' +
+    normalizeLf(read('css/styles.css'));
+  assert.equal(
+    embedded,
+    expected,
+    'homepage embedded CSS must equal the two source files exactly',
+  );
+
+  for (const [relative, expectedHash] of Object.entries(expectedCssSha256)) {
+    assert.equal(sha256(relative), expectedHash, relative + ' pinned SHA-256');
+  }
+
+  for (const file of htmlFiles.filter((relative) => relative !== 'index.html')) {
+    const stylesheets = tags(read(file), 'link')
+      .filter((tag) => attr(tag, 'rel') === 'stylesheet')
+      .map((tag) => attr(tag, 'href'));
+    assert.deepEqual(
+      stylesheets,
+      ['/assets/tokens.css?v=2', '/css/styles.css?v=3'],
+      file + ' revised stylesheets',
+    );
+  }
+});
+
 test('immutable cache policy applies only to release-versioned assets', () => {
-  for (const file of htmlFiles) {
+  for (const file of htmlFiles.filter((relative) => relative !== 'index.html')) {
     const stylesheets = tags(read(file), 'link')
       .filter((tag) => attr(tag, 'rel') === 'stylesheet')
       .map((tag) => attr(tag, 'href'));
