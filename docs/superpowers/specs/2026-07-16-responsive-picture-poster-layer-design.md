@@ -1,7 +1,7 @@
 # Responsive picture poster layer design
 
 - Date: 2026-07-16 (Europe/Berlin)
-- Status: approved architecture and qualification design, written-spec review pending
+- Status: approved by user; implementation plan written and awaiting execution choice
 - Repository: `tarik-ux/efficient-technologies-site`
 - Draft pull request: #2
 - Approved implementation base: `b416b8113315c95c32d4674aa54769d90c562abd`
