@@ -235,11 +235,11 @@ not inside the page.
 
 ### Browser phase deadlines
 
-The Playwright program also wraps every browser operation that lacked a finite
-deadline in v3. Production limits are fixed:
+The Playwright program also wraps every high-risk phase on the unbounded v3
+capture path. Production limits are fixed:
 
-- persistent-context launch: `45000` ms;
-- `document.fonts.ready`: `15000` ms;
+- persistent-context launch and new-page creation: `45000` ms;
+- poster/image decode and `document.fonts.ready`: `15000` ms;
 - capture canonicalization: `15000` ms;
 - each screenshot: `30000` ms; and
 - persistent-context close: `15000` ms.
