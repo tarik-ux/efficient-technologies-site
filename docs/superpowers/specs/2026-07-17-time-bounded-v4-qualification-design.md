@@ -159,7 +159,13 @@ The v3 source locks used for reconstruction are:
 | `launch-contract-correction-regression.test.mjs` | 6,972 | `e40d45e860d7067d43fff4c840851160eff14233d8a8556a5d69020dd793f8e5` |
 | `policy-lock-correction-regression.test.mjs` | 6,267 | `e5fb9edb84509c5652442bd896b8394ccc51e4be7de2a3e8bad4061a96ea0a02` |
 
-The preparer performs only these source transformations:
+The preparer performs no transformation to copied browser source. It writes one
+byte-exact authenticated copy to `source-v3-browser` and a second byte-exact
+working copy to `browser`, allowing the focused tests to observe valid RED
+before implementation.
+
+After RED is recorded, the v4 adapter may perform only these source
+transformations:
 
 1. replace the exact experiment namespace
    `poster-picture-layer-v3` with `poster-picture-layer-v4`;
