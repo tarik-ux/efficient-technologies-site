@@ -211,8 +211,8 @@ There is no retry, deadline extension, replacement run, or best-run selection.
 
 The Playwright program writes `browser-phase-journal.jsonl` synchronously. Each
 record contains schema version, UTC timestamp, PID, monotonically increasing
-sequence, phase, state (`START` or `END`), and stable case or capture ID when
-applicable.
+sequence, phase, state (`START`, `END`, or `TIMEOUT`), and stable case or
+capture ID when applicable.
 
 Required boundaries include:
 
