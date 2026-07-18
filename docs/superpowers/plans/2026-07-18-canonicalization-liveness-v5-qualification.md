@@ -83,6 +83,8 @@ if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
 ### Evidence-only v5 reconstruction and diagnostic files
 
 - `output/performance/2026-07-18/prepare-v5.mjs` - authenticates v4 and creates the fresh v5 root.
+- `output/performance/2026-07-18/prepare-v5-boundary.mjs` - pure historical-publish classification and both-root freshness helper.
+- `output/performance/2026-07-18/prepare-v5-boundary.test.mjs` - offline boundary and freshness contract.
 - `output/performance/2026-07-18/poster-picture-layer-v5/experiment-policy.json` - v5 policy, boundaries, deadlines, and one-shot rules.
 - `output/performance/2026-07-18/poster-picture-layer-v5/reconstruction.json` - exclusive-copy and lock verification.
 - `output/performance/2026-07-18/poster-picture-layer-v5/v4-terminal-lock.json` - fresh read-only v4 snapshot and sealed-evidence authentication.
@@ -141,6 +143,8 @@ if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
 **Files:**
 
 - Create: `output/performance/2026-07-18/prepare-v5.mjs`
+- Create: `output/performance/2026-07-18/prepare-v5-boundary.mjs`
+- Create: `output/performance/2026-07-18/prepare-v5-boundary.test.mjs`
 - Create: `output/performance/2026-07-18/poster-picture-layer-v5/*`
 - Create: `output/performance/2026-07-18/poster-picture-layer-v5/browser/canonicalizer-contract.test.mjs`
 - Create: `output/performance/2026-07-18/poster-picture-layer-v5/browser/canonicalizer-contract-red.json`
@@ -150,6 +154,51 @@ if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
 
 - Consumes: committed v5 design and plan, terminal v4 locks, sealed v4 browser manifest, exact baseline/candidate, accepted matrix source, protected roots, and clean Git.
 - Produces: fresh v5 reconstruction plus exact `3/3` focused RED; no Chrome, Edge, server, profile, product edit, one-shot marker, network call, or Git commit.
+
+**Task 1 correction authority and classification amendment (approved 2026-07-18):**
+
+- The original Task 1 reconstruction authority was consumed by the approved
+  effective execution that stopped before root creation on
+  `Publish boundary historical entry mismatch:
+  .superpowers/sdd/progress.md`.
+- The approved Task 1 correction package authorizes only plan, brief,
+  controller, focused offline test, report, and independent-review changes.
+  It does not authorize reconstruction execution.
+- Any fresh reconstruction execution requires a later, separate, explicit
+  user approval after the correction review is clean. The reconstruction
+  command in Step 6 is not authority by itself.
+- Historical publish authentication keeps every product and unrelated control
+  path byte-locked while narrowly classifying only:
+  - `.superpowers/sdd/progress.md` as the exact live global v5 SDD ledger;
+  - `.superpowers/sdd/time-bounded-v4/progress.md` as a historical
+    replacement that must equal the separately locked terminal record: 3,038
+    bytes, SHA-256
+    `dcaee4352f570e2477411a3da26a62052450341c74a5c9e5b70ed3b3895b1e4a`;
+  - `.superpowers/sdd/canonicalization-liveness-v5/` as the only mutable v5
+    control prefix, with regular-file, bounded-size, filename, and extension
+    checks; and
+  - the exact five non-v5-prefix post-boundary additions under the independent
+    authentication rules below.
+- The five exact post-boundary additions are:
+  - `.superpowers/sdd/time-bounded-v4/task-3-report.md`: 13,892 bytes,
+    SHA-256
+    `b2e588efeda3bd710e1b399ad6757b65cca34819fd15bfce717e6928525e74ad`;
+  - `.superpowers/sdd/time-bounded-v4/task-3-review-package.diff`: 140 bytes,
+    SHA-256
+    `4a87dcd1fb3d5e95834ada1c2fda367bcab73c513297a5abc42f8b8c3f42c80b`;
+  - `.superpowers/sdd/time-bounded-v4/task-3-review.md`: 1,476 bytes,
+    SHA-256
+    `50e2742832d64a2adca2a84af38163d2bbc59e5c5d0b1e4cebaa06a78b25da27`;
+  - the tracked v5 plan, authenticated by clean Git, current HEAD, and
+    plan-commit equality; and
+  - the approved design, still locked to 30,001 bytes and SHA-256
+    `acf49fc3e71cb451ee3b9297530d4b31653e9a7db7ee917b80c78ac83c48c611`.
+- The complete current publish snapshot, including authorized control state,
+  must be identical before and after any future reconstruction process.
+- Both exact roots must be absent inside the controller before any
+  runtime-identity read, copy, directory creation, or write:
+  - `C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-18\poster-picture-layer-v5`;
+  - `C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-18\poster-picture-layer-release-v5`.
 
 - [ ] **Step 1: Verify the boundary before creating v5**
 
@@ -430,6 +479,21 @@ file modification time newer than the lock. Run a PowerShell reparse-point
 inspection over v4, baseline, candidate, accepted source, authoritative source,
 publish checkout, V1, v2, and v3; any reparse point aborts.
 
+Use `prepare-v5-boundary.mjs` before any runtime-identity read, copy, directory
+creation, or write. Its offline contract must prove:
+
+- changed immutable product rows are rejected;
+- the live global ledger is accepted only at its exact path and only when its
+  regular-file, bounded-size, and v5 content contract passes;
+- the historical v4 progress row is accepted only as the exact separately
+  locked terminal replacement;
+- files below the exact v5 control prefix pass only its regular-file,
+  bounded-size, filename, and extension contract;
+- unexpected `.superpowers` additions are rejected;
+- the exact five independently authenticated post-boundary additions pass;
+- an existing reconstruction root is rejected; and
+- an existing release root is rejected.
+
 After all reads pass, create `root` with `{ recursive: false }`. Copy baseline
 and candidate from v4, the 18 source files into both `source-v4-browser` and
 `browser`, and the exact 49-file accepted matrix source into
@@ -509,6 +573,11 @@ copies `18`, with the exact digests from the global constraints and source-lock
 table.
 
 - [ ] **Step 6: Run reconstruction exactly once**
+
+This step is blocked after the consumed approved effective execution. Do not
+run it again unless Tarik gives a new, separate, explicit reconstruction
+approval after the Task 1 correction review is clean. The command below
+defines the future approved invocation but does not grant authority.
 
 Run:
 
