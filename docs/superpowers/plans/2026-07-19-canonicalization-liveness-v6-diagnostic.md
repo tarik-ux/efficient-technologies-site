@@ -89,6 +89,8 @@ headless Chrome, static JSON evidence, SHA-256 manifests, Git.
 - Create:
   `C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-19\prepare-v6-core.mjs`
 - Create:
+  `C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-19\prepare-v6-contract.test.mjs`
+- Create:
   `C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-19\prepare-v6.mjs`
 
 ### Fresh v6 diagnostic implementation
@@ -118,6 +120,10 @@ headless Chrome, static JSON evidence, SHA-256 manifests, Git.
   `.superpowers\sdd\canonicalization-liveness-v6\prepare-v6-red.json`
 - Create:
   `.superpowers\sdd\canonicalization-liveness-v6\prepare-v6-green.json`
+- Create:
+  `.superpowers\sdd\canonicalization-liveness-v6\prepare-v6-controller-red.json`
+- Create:
+  `.superpowers\sdd\canonicalization-liveness-v6\prepare-v6-controller-green.json`
 - Create:
   `.superpowers\sdd\canonicalization-liveness-v6\runner-guards-green.json`
 - Create:
@@ -246,6 +252,8 @@ and no product or v5 path changed.
 **Files:**
 
 - Create:
+  `output/performance/2026-07-19/prepare-v6-contract.test.mjs`
+- Create:
   `output/performance/2026-07-19/prepare-v6.mjs`
 - Create on the one successful execution:
   `output/performance/2026-07-19/poster-picture-layer-v6/`
@@ -263,7 +271,26 @@ and no product or v5 path changed.
 {"commandStatus":"COMPLETED","mode":"reconstruct","decision":"ACCEPT","schemaVersion":6}
 ```
 
-- [ ] **Step 1: Implement fail-closed predecessor authentication**
+- [ ] **Step 1: Write and observe the failing preparer contract**
+
+Create a six-case Node contract whose ordered cases are:
+
+```text
+exact check-only command accepts the committed plan
+check-only reports zero write paths
+check-only authenticates both terminal v5 seals
+check-only authenticates all fixed source manifests
+unexpected CLI arguments are rejected
+an unexpected plan path is rejected
+```
+
+The test launches `prepare-v6.mjs` only with `--check-only`; it never invokes
+reconstruction mode. Before `prepare-v6.mjs` exists, run it once to
+`.superpowers/sdd/canonicalization-liveness-v6/prepare-v6-controller-red.json`.
+Expected: exit `1`, `0/6`, with the missing preparer as an ordinary assertion
+failure rather than an uncaught setup error.
+
+- [ ] **Step 2: Implement fail-closed predecessor authentication**
 
 `prepare-v6.mjs` must:
 
@@ -293,7 +320,7 @@ source/capture-stabilizer-proposed.mjs
 The copied browser subset is the complete sorted browser predecessor minus
 exactly `canonicalizer-contract-red.json`.
 
-- [ ] **Step 2: Implement exclusive reconstruction**
+- [ ] **Step 3: Implement exclusive reconstruction**
 
 Create the v6 root only after all checks pass. Copy the five authenticated
 trees/subsets and write:
@@ -316,15 +343,20 @@ The runtime record uses v6 schemas and fresh executable/module hashes. The
 policy preserves retry limits, thresholds, candidate locks, and ports
 `4381/4382/4383`.
 
-- [ ] **Step 3: Verify the preparer without creating the root**
+- [ ] **Step 4: Run focused preparer GREEN and syntax verification**
 
-Run:
+Run the six-case contract to the fresh output
+`.superpowers/sdd/canonicalization-liveness-v6/prepare-v6-controller-green.json`.
+Expected: exit `0`, `6/6`. It must report that both v6 targets remain absent
+and that check-only produced zero write paths.
+
+Then run:
 
 ```powershell
 node --check 'C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-19\prepare-v6.mjs'
 ```
 
-Then run a read-only preflight mode:
+Run the controller's read-only preflight directly:
 
 ```powershell
 node 'C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2026-07-19\prepare-v6.mjs' --plan 'C:\Users\tarik\Claude Projects\efficient-technologies\output\publish\efficient-technologies-site\docs\superpowers\plans\2026-07-19-canonicalization-liveness-v6-diagnostic.md' --check-only
@@ -333,7 +365,13 @@ node 'C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2
 Expected: exit `0`, decision `ACCEPT`, both v6 targets still absent, and zero
 write paths reported.
 
-- [ ] **Step 4: Consume reconstruction once**
+- [ ] **Step 5: Independently review check-only before root creation**
+
+Review the complete preparer, controller contract, Task 1 core, check-only
+stdout, exact v5 readback, and all fixed manifests. Any unresolved finding
+blocks reconstruction while both v6 targets remain absent.
+
+- [ ] **Step 6: Consume reconstruction once**
 
 Run without `--check-only` exactly once:
 
@@ -344,7 +382,7 @@ node 'C:\Users\tarik\Claude Projects\efficient-technologies\output\performance\2
 Expected: exit `0` and the exact completed stdout object. Do not retry after
 any root-creating failure; preserve the partial state and stop.
 
-- [ ] **Step 5: Authenticate the reconstructed boundary**
+- [ ] **Step 7: Authenticate the reconstructed boundary**
 
 Require:
 
