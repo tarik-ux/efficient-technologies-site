@@ -443,6 +443,40 @@ including Task 4 and later launch boundaries, bind to
 `9/9` after adaptation; an `8/8` expectation is superseded by this repair
 contract.
 
+Every downstream exact diagnostic-contract gate binds to exact `12/12`.
+Passing any arbitrary twelve tests is insufficient: the suite must preserve
+the original eight exact names:
+
+```text
+exact RED matrix is CONFIRMED
+each of the three completed RED outcome mutations is FALSIFIED
+passing-state digest mismatch is FALSIFIED
+any HTTP request is FALSIFIED
+missing result or cleanup failure is INCONCLUSIVE
+exact GREEN matrix is GREEN
+production or runtime identity mismatch is INCONCLUSIVE
+post-seal mutation fails verification
+```
+
+and the exact four repair names:
+
+```text
+red-repair-1 has exact RED confirmation and falsification semantics
+red-repair-1 missing result or cleanup failure is INCONCLUSIVE
+red-repair-1 contract fixes root matrix and sealed proposed path
+GREEN predecessor binding requires fixed original identities and sealed confirmed repair
+```
+
+This exact `12/12` contract explicitly supersedes:
+
+- original Task 4 Step 2's `diagnostic contract 8/8` at original plan line
+  2251; and
+- the diagnostic count represented by the first `8/8` after `3/3` in the
+  original final focused-count checklist at original plan line 3308.
+
+The distinct harness-regression count remains exact `8/8`. The native
+runner-guard count remains exact `9/9` under the repaired overlay contract.
+
 - [ ] **Step 3: Preserve the visible surface**
 
 Do not change any UI, video, scene, scroll, zoom, transition, animation, timing,
