@@ -143,6 +143,36 @@ If the repair stage returns `FALSIFIED` or `INCONCLUSIVE`, or cannot seal and
 verify, v5 stops. No `red-repair-2`, hidden retry, cleanup rerun, deadline
 change, or replacement evidence is authorized.
 
+### 5. Authenticate the repaired working-harness overlay downstream
+
+The repair necessarily changes three members of the mutable `browser/` copy
+and adds one repair fixture. Therefore the original Task 3 requirement
+`working copied source 18/18 exact` is superseded only for that mutable
+pre-adaptation copy by
+`.superpowers/sdd/canonicalization-liveness-v5/repair-working-harness-input.json`.
+The immutable `source-v4-browser` requirement remains exact `18/18` and is not
+weakened or replaced.
+
+The repaired input manifest must authenticate the complete current 21-file
+`browser/` inventory:
+
+- all 18 immutable source member names remain present;
+- 15 source members remain byte-identical;
+- exactly `runner-guards.psm1`, `runner-guards.tests.ps1`, and
+  `run-browser-gates.ps1` have the fixed approved repair identities;
+- the two already-authenticated Task 1 canonicalizer contract artifacts are
+  carried as separate additions rather than source drift;
+- `argv-fixture.mjs` is the sole repair addition; and
+- no source member is missing and no other file is present.
+
+Original Task 3's `adapt-v5-harness.mjs` must authenticate this repaired input
+manifest before any write. It must preserve the raw-token repair while applying
+the already-authorized v4-to-v5 and proposed-to-production transformations,
+then emit an exact repaired-plus-adapted output manifest. Every later gate that
+refers to the exact v5 working harness binds to that output manifest. The
+immutable source-v4 manifest remains a separate predecessor, and the native
+runner-guard suite must remain exact `9/9` after adaptation.
+
 ## Control-state corrections
 
 The Task 2 report currently opens with the stale preflight state
@@ -177,10 +207,16 @@ Harness files in the existing v5 root:
 
 - `browser/runner-guards.psm1`;
 - `browser/runner-guards.tests.ps1`;
+- `browser/run-browser-gates.ps1`;
 - `diagnostic/run-canonicalization-diagnostic.ps1`;
 - `diagnostic/finalize-canonicalization-diagnostic.mjs`;
 - `diagnostic/diagnostic-contract.test.mjs`; and
 - a minimal browser-free argv fixture or regression test if needed.
+
+The ignored repair preflight scope also includes
+`.superpowers/sdd/canonicalization-liveness-v5/repair-working-harness-input.json`
+as the exact downstream authentication boundary for the repaired mutable
+browser overlay.
 
 No path in `site/`, `baseline/`, `candidate/`, `diagnostic/red/`, terminal v4,
 or a release root is in repair scope.
@@ -198,7 +234,9 @@ Before the one repaired browser execution:
    drift;
 7. prove no owned process, temporary profile, or qualification-port residue;
 8. produce a `READY_TO_RUN_REPAIR` report; and
-9. obtain independent read-only approval of the repair and launch boundary.
+9. authenticate the complete repaired 21-file working-harness input manifest;
+   and
+10. obtain independent read-only approval of the repair and launch boundary.
 
 Only the root controller may then invoke:
 
