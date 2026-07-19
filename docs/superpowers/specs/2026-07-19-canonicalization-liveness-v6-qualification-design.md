@@ -165,16 +165,23 @@ authenticate before writing:
    `089513385f53893c4cdbb1bc2b8402fb3c7f972886da05af9e94fda3a37c0782`;
 4. accepted harness source, 49 files with digest
    `46be90cedf7913ec4ee4c9b26a01b14fb1a0b8b923d86db0bf5270b4c52be4d1`;
-5. repaired working browser harness, 21 files with digest
+5. repaired working browser predecessor, 21 files with digest
    `e9bf0d7afa0612969d7a70af7a22883c827128bdb2db636e633d2c2dcfa0f772`;
 6. the current publish Git branch, HEAD, upstream, remote, tracked cleanliness,
    and absent index lock; and
 7. absence of both v6 target roots.
 
 It copies only authenticated baseline, candidate, immutable source,
-accepted-harness, current working browser-harness, and diagnostic source
-members. It copies no v5 RED result, lock, log, journal, profile, PID, cleanup,
-or verdict as v6 evidence.
+accepted-harness, current working browser source, and diagnostic source
+members. The copied browser source is exactly the 20-file predecessor subset
+obtained by excluding `browser/canonicalizer-contract-red.json`; its aggregate
+digest is
+`f7eb49d601f34fb29f097a902b2f8f29a85008ea9e78416c43320443428a4082`.
+The copied diagnostic source is the exact seven-file allowlist defined by the
+implementation plan; its aggregate digest is
+`e6afa84dfee3b37fd8ba9560aaf7071ee9073870fe31c2b0653eab5e5535edf3`.
+It copies no v5 RED result, lock, log, journal, profile, PID, cleanup, or
+verdict as v6 evidence.
 
 The preparer writes a v6 reconstruction record, experiment policy, predecessor
 lock, workspace boundary, and a fresh runtime identity. It must re-read every
