@@ -12,8 +12,10 @@ independently accepted as `CONFIRMED`.
 
 **Architecture:** Make `Invoke-OwnedProcessWithDeadline` the sole encoder of
 raw argument tokens, add `red-repair-1` as an explicit RED-semantic evidence
-stage, and bind downstream GREEN work to its sealed proposed-module record.
-Original `diagnostic/red` remains immutable predecessor evidence.
+stage, bind downstream GREEN work to its sealed proposed-module record, and
+authenticate the repaired mutable browser overlay before original Task 3
+adapts it. Original `diagnostic/red` and `source-v4-browser` remain immutable
+predecessor evidence.
 
 **Tech Stack:** Windows PowerShell 5.1, Node.js 24.11.1 built-ins, the existing
 pinned Playwright/Chrome runtime, Git, and the existing v5 diagnostic seal.
@@ -23,10 +25,10 @@ pinned Playwright/Chrome runtime, Git, and the existing v5 diagnostic seal.
 - Approved repair design:
   `docs/superpowers/specs/2026-07-19-v5-diagnostic-argument-transport-repair-design.md`.
 - Design commit:
-  `5ea048b2d219931e3421fbf5b1c2a4980f95bcd3`.
+  `a4f4d2df171952999351c600ce1b4c68025af747`.
 - Design size and SHA-256:
-  9,202 bytes,
-  `66a50aa358f98f0f9f96d02ff6d3fc61487d9e3acbb298708dc3d772198efd37`.
+  11,145 bytes,
+  `289953ce96525c026cfba5f1857e207cf07d99da65b89caeede851b0f87f23d8`.
 - Publish checkout:
   `C:\Users\tarik\Claude Projects\efficient-technologies\output\publish\efficient-technologies-site`.
 - Branch: `agent/performance-without-motion-loss`.
@@ -274,6 +276,8 @@ file count, and digest to be byte-identical.
   `.superpowers/sdd/canonicalization-liveness-v5/task-2-repair-review-package.diff`
 - Create:
   `.superpowers/sdd/canonicalization-liveness-v5/task-2-repair-review.md`
+- Create:
+  `.superpowers/sdd/canonicalization-liveness-v5/repair-working-harness-input.json`
 
 - [ ] **Step 1: Build a complete repair report**
 
@@ -286,6 +290,7 @@ Record:
 - zero browser execution so far;
 - zero residual owned PIDs, profiles, and ports;
 - `diagnostic/red-repair-1` absent; and
+- exact repaired 21-file working-harness input authentication; and
 - status `READY_TO_RUN_REPAIR`.
 
 - [ ] **Step 2: Generate the review package**
@@ -304,8 +309,9 @@ seal, or network operation. Review:
 3. original sealed evidence immutability;
 4. stage/root/finalizer decision semantics;
 5. downstream repaired-predecessor binding;
-6. deadlines, process ownership, cleanup, and no-HTTP constraints; and
-7. no product/UI/video/motion drift.
+6. repaired working-harness input and downstream output-manifest binding;
+7. deadlines, process ownership, cleanup, and no-HTTP constraints; and
+8. no product/UI/video/motion drift.
 
 Only exact `APPROVED` with no Critical or Important finding unlocks Task 5.
 The same implementer fixes findings under TDD; review repeats without asking
@@ -379,6 +385,8 @@ the already-approved original Task 3 workflow.
 
 - Read and follow:
   `docs/superpowers/plans/2026-07-18-canonicalization-liveness-v5-qualification.md`
+- Create during original Task 3:
+  `output/performance/2026-07-18/poster-picture-layer-v5/v5-repaired-working-harness-output.json`
 
 - [ ] **Step 1: Record the predecessor substitution**
 
@@ -389,8 +397,51 @@ authoritative causal RED input under the supplemental repair authority.
 - [ ] **Step 2: Start original Task 3**
 
 Resume at “Apply the one helper change and prove complete GREEN.” Every original
-gate remains binding except references to the authoritative confirmed RED root,
-which now resolve to `diagnostic/red-repair-1`.
+gate remains binding except:
+
+1. references to the authoritative confirmed RED root now resolve to
+   `diagnostic/red-repair-1`; and
+2. original Task 3 Step 1's mutable `working copied source 18/18 exact` gate is
+   superseded only by exact authentication of
+   `.superpowers/sdd/canonicalization-liveness-v5/repair-working-harness-input.json`.
+
+The immutable `source-v4-browser` gate remains exact `18/18`.
+
+The repaired pre-adaptation input manifest is fixed at:
+
+```text
+immutable source members: 18
+source members byte-identical in browser/: 15
+repair-modified source members: exactly
+  runner-guards.psm1
+  runner-guards.tests.ps1
+  run-browser-gates.ps1
+Task 1 additions carried separately: exactly
+  canonicalizer-contract.test.mjs
+  canonicalizer-contract-red.json
+repair additions: exactly
+  argv-fixture.mjs
+missing source members: 0
+unexpected additions: 0
+total browser files: 21
+aggregate digest:
+  e9bf0d7afa0612969d7a70af7a22883c827128bdb2db636e633d2c2dcfa0f772
+```
+
+Before its first write, `adapt-v5-harness.mjs` must authenticate the complete
+input manifest and the separate immutable source-v4 `18/18` manifest. It must
+preserve the raw-token repair in all three modified source members while
+applying the original Task 3 transformations. It then emits
+`v5-repaired-working-harness-output.json`, an exact full inventory of the
+repaired-plus-adapted browser harness, and records that manifest identity in
+`v5-harness-adaptation.json`.
+
+All later original-plan references to the `exact v5 working harness`,
+including Task 4 and later launch boundaries, bind to
+`v5-repaired-working-harness-output.json`. They do not bind to the original
+18-file working-copy snapshot. The native runner-guard suite must pass exact
+`9/9` after adaptation; an `8/8` expectation is superseded by this repair
+contract.
 
 - [ ] **Step 3: Preserve the visible surface**
 
