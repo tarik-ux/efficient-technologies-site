@@ -292,8 +292,9 @@ creating a V10 root, preflight must authenticate:
 V10 has four isolated zones:
 
 1. terminal V8 and V9 predecessor evidence, which remains read-only;
-2. a candidate subtree inside the fresh V10 control root, which is explicitly
-   non-authoritative and editable only before Task 1 sealing;
+2. task-scoped candidate subtrees inside the fresh V10 control root, each
+   explicitly non-authoritative and editable only until its owning offline
+   task is sealed;
 3. sealed V10 control evidence, immutable event files, locks, operators, and
    verifier records; and
 4. a fresh V10 result root created only by the one-shot reconstructor.
@@ -326,20 +327,27 @@ V10 explicitly separates candidate writes from evidence writes.
 
 ### Candidate writes
 
-Before Task 1 sealing, files below:
+Only the three offline authoring tasks have candidate surfaces:
 
 ```text
-capture-operation-v10-control\candidate
+capture-operation-v10-control\candidate\task-1
+capture-operation-v10-control\candidate\task-2
+capture-operation-v10-control\candidate\task-3
 ```
 
-may be revised during test-first development and reviewer-requested
-correction. Candidate files are not evidence and never authorize a later
-stage. Every RED/GREEN output uses a new attempt-specific filename so no test
-record is overwritten.
+Each task directory must be absent before its owning task begins. Files inside
+that directory may be revised during the owning task's test-first development
+and reviewer-requested correction. Candidate files are not evidence and never
+authorize a later stage. Every RED/GREEN output uses a new attempt-specific
+filename so no test record is overwritten.
 
 An independent candidate review references exact candidate paths, bytes, and
 SHA-256 identities. The approved candidate identity is the only input the
-sealer may copy.
+owning task's sealer may copy.
+
+Sealing one task freezes only that task's candidate and sealed identities. It
+does not authorize, create, or make editable a later task's candidate
+directory. Tasks 4 through 8 have no candidate surface and remain one-shot.
 
 ### Sealed writes
 
@@ -360,8 +368,8 @@ Result-root evidence is also exclusively created and immutable.
 There is no `progress.md`, mutable index, append operation, or in-place status
 file in V10. Progress is a read-only projection of sealed journal events.
 
-After the Task 1 contract lock exists, candidate and sealed contract bytes are
-frozen. A later defect is terminal; it is not repaired inside V10.
+After a task lock exists, that task's candidate and sealed bytes are frozen. A
+later defect in those bytes is terminal; it is not repaired inside V10.
 
 ## Immutable event journal
 
@@ -717,6 +725,22 @@ boundaries. It performs the negative injections against imports without
 modifying sealed bytes.
 
 Only exact seal acceptance authorizes Task 2.
+
+### Later offline task sealing
+
+Tasks 2 and 3 repeat the same candidate-review-then-seal pattern within their
+own candidate namespaces:
+
+1. create the owning candidate directory only after the preceding sealed
+   review authorizes the task;
+2. run attempt-specific RED/GREEN records without overwriting prior records;
+3. obtain an independent finding-free candidate review over exact hashes;
+4. copy only the accepted bytes into new exclusive paths below `sealed`;
+5. create the owning lock and journal event exclusively; and
+6. obtain an independent sealed review before authorizing the next task.
+
+Neither task may modify Task 1 files or the other task's candidate, sealed,
+lock, review, or journal records.
 
 ## One-shot reconstruction
 
