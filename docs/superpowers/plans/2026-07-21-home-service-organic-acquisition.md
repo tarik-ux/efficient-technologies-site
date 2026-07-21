@@ -1859,7 +1859,7 @@ Expected: `sourceBytes` is lower than 63,436 and `STATIC_CHECK_ALL_PASS`. Record
 
 - [ ] **Step 5: Use only a rendering-neutral fallback if the byte gate still fails**
 
-If and only if `index.html` is still at or above 63,436 bytes, remove CSS comments from inside `<style data-homepage-styles>` using a bounded mechanical rewrite. Do not collapse declarations, rewrite selectors, reorder rules, change whitespace in protected scripts, or touch content. First copy `index.html` to `.validation/home-service-release-v1/candidate/index-before-css-comment-strip.html`, then run:
+If and only if `index.html` is still at or above 63,436 bytes, remove CSS comments from inside `<style data-homepage-styles>` using a bounded mechanical rewrite, then remove only trailing spaces or tabs from each resulting line with `.replace(/[ \t]+$/gm, '')`. Do not collapse declarations, rewrite selectors, reorder rules, change whitespace in protected scripts, or touch content. The performance contract keeps the source CSS hashes pinned and accepts exactly this two-step Step 5 form in addition to the unstripped Task 5 and Task 8 forms. First copy `index.html` to `.validation/home-service-release-v1/candidate/index-before-css-comment-strip.html`, then run:
 
 ```powershell
 $env:ET_PLAN_ROOT = (Get-Location).Path

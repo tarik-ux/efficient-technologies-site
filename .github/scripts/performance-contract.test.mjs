@@ -1528,7 +1528,6 @@ test('homepage embeds only an approved revisioned CSS split while other routes r
   );
   const sharedHomepageCss = sharedStyles.slice(0, commercialIndex);
   assert.equal(sharedHomepageCss.includes(commercialMarker), false, 'commercial CSS excluded from homepage shared variant');
-  assert.equal(embedded.startsWith(tokens + '\n'), true, 'homepage tokens remain the exact normalized prefix');
   assert.equal(embedded.includes(commercialMarker), false, 'commercial CSS must not enter homepage embedded variants');
 
   const task5Embedded = tokens + '\n' + sharedHomepageCss + homepageAcquisitionCss;
@@ -1543,8 +1542,22 @@ test('homepage embeds only an approved revisioned CSS split while other routes r
     sharedHomepageCss.slice(0, blogIndex) +
     sharedHomepageCss.slice(recentWorkIndex) +
     homepageAcquisitionCss;
+  const task8CleanEmbedded = task8Embedded
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/[ \t]+$/gm, '');
+  assert.equal(
+    [
+      tokens + '\n',
+      (tokens + '\n')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/[ \t]+$/gm, ''),
+    ]
+      .some((prefix) => embedded.startsWith(prefix)),
+    true,
+    'homepage tokens remain an exact normalized prefix or its approved clean fallback form',
+  );
   assert.ok(
-    [task5Embedded, task8Embedded].includes(embedded),
+    [task5Embedded, task8Embedded, task8CleanEmbedded].includes(embedded),
     'homepage embedded CSS must equal one approved tokens/shared/acquisition variant exactly',
   );
 
