@@ -9,13 +9,13 @@ const root = path.resolve(process.env.SITE_ROOT ?? '.');
 const contractRoot = path.resolve(process.env.CONTRACT_ROOT ?? '.');
 const release = '20260714';
 const frauncesRelease = '20260715';
-const tokensRevision = '3';
+const tokensRevision = '4';
 const publicBase = 'https://efficientautomate.com';
 const socialImage = `/assets/og-v${release}.jpg`;
 const manifestPath = '.github/performance/media-manifest.json';
 const expectedCssSha256 = {
-  'assets/tokens.css': '5fa72341c7d984b3b63be2c9b2997a4a257f268e2a464c9f534a8446e0c39c88',
-  'css/styles.css': 'd26dcb6cb8d02ca9af4070e563d52a4be35cc12ea9f1e4bbbf0efffa7e67b8e7',
+  'assets/tokens.css': 'ea6f586e1e2f61dc9670b776e0d3c708ac9702f86c5b2ecf0cfec71e74e7e2fe',
+  'css/styles.css': 'd81ee39a23d58881e3d7fc53706ea4e3a9ac6d1a2712b9fd2cd69095bd5e92ee',
 };
 
 const homepageAcquisitionCss = `/* ---- home-service acquisition additions ---- */
@@ -46,17 +46,29 @@ const htmlFiles = [
   'blog/crm-automation-local-business/index.html',
   'blog/review-automation-local-seo/index.html',
   'blog/software-consulting-vs-in-house/index.html',
+  'industries/electrical-automation/index.html',
+  'industries/hvac-automation/index.html',
+  'industries/plumbing-automation/index.html',
+  'solutions/booking-automation/index.html',
+  'solutions/lead-recovery-automation/index.html',
+  'solutions/review-automation/index.html',
 ];
 
 const expectedSecondaryStylesheetRevisions = {
-  '404.html': '3',
-  'about/index.html': '4',
-  'blog/index.html': '4',
-  'blog/booking-automation-after-hours/index.html': '4',
-  'blog/business-process-automation-small-business/index.html': '4',
-  'blog/crm-automation-local-business/index.html': '4',
-  'blog/review-automation-local-seo/index.html': '4',
-  'blog/software-consulting-vs-in-house/index.html': '4',
+  '404.html': '5',
+  'about/index.html': '5',
+  'blog/index.html': '5',
+  'blog/booking-automation-after-hours/index.html': '5',
+  'blog/business-process-automation-small-business/index.html': '5',
+  'blog/crm-automation-local-business/index.html': '5',
+  'blog/review-automation-local-seo/index.html': '5',
+  'blog/software-consulting-vs-in-house/index.html': '5',
+  'industries/electrical-automation/index.html': '5',
+  'industries/hvac-automation/index.html': '5',
+  'industries/plumbing-automation/index.html': '5',
+  'solutions/booking-automation/index.html': '5',
+  'solutions/lead-recovery-automation/index.html': '5',
+  'solutions/review-automation/index.html': '5',
 };
 
 const expectedVideos = [
@@ -1502,7 +1514,7 @@ test('homepage embeds only an approved revisioned CSS split while other routes r
     .filter((tag) => /\bdata-homepage-styles\b/i.test(tag));
   assert.equal(markedStyles.length, 1, 'homepage marked style count');
   assert.equal(attr(markedStyles[0], 'data-tokens-revision'), tokensRevision);
-  assert.equal(attr(markedStyles[0], 'data-styles-revision'), '3');
+  assert.equal(attr(markedStyles[0], 'data-styles-revision'), '4');
 
   const networkStyles = tags(home, 'link').filter((tag) => {
     const rel = attr(tag, 'rel');

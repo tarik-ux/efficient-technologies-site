@@ -1116,10 +1116,10 @@ Inside `#hero`, preserve the grid, side label, `rise` spans, reveal hooks, termi
     <span class="rise">Turn missed calls and slow follow-up</span>
     <span class="rise">into <em class="serif">booked jobs.</em></span>
   </h1>
-  <p class="hero-sub" data-reveal>We map the path from inquiry to human handoff, then build the approved lead-recovery, booking, and follow-up steps around the tools your team already uses.</p>
+  <p class="hero-sub" data-reveal>We build lead recovery, booking, and review systems for HVAC, plumbing, electrical, and other home-service businesses across the United States.</p>
   <div class="hero-cta" data-reveal>
     <a class="btn btn-primary magnetic" data-cursor href="#book">Book a Free Automation Audit</a>
-    <a class="btn btn-ghost" data-cursor href="/solutions/lead-recovery-automation/">See Lead Recovery</a>
+    <a class="btn btn-ghost" data-cursor href="#how">See How It Works</a>
   </div>
   <div class="terminal" data-reveal role="img" aria-label="Illustrative automation workflow">
     <div class="terminal-bar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="tlabel">et &mdash; illustrative workflow &nbsp;<em class="tlive">demo</em></span></div>

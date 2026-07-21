@@ -103,6 +103,8 @@
   --et-fg:          var(--et-white);
   --et-accent:      var(--et-blue);
   --et-signal:      var(--et-lime);
+  --et-primary-action-bg:       var(--et-blue-hover);
+  --et-primary-action-hover-bg: var(--et-blue-bg);
   --et-focus-ring:  0 0 0 2px var(--et-void), 0 0 0 4px var(--et-blue);
 
   /* ---- Typography ------------------------------------------------------- */
