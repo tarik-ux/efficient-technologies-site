@@ -1335,6 +1335,8 @@ Expected: one commit containing the homepage and the single-line policy correcti
 - Consumes: the six commercial pages and the exact audit CTA/UTM convention.
 - Produces: a truthful founder/entity page, a home-service editorial hub, policy-safe review guidance, evidence-bounded operational articles, and contextual internal links from every existing article into the commercial cluster.
 
+> **Controller correction:** SEO/GEO tests use per-article modified dates (CRM, process, booking, and review: `2026-07-21`; consulting: `2026-07-14`) and accept only either the legacy eight-route/legacy-robots contract before Task 7 or the exact fourteen-route/release-robots contract after it, never an intermediate.
+
 - [ ] **Step 1: Prove the content cluster still violates the release contract**
 
 Run:

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { isDeepStrictEqual } from 'node:util';
 
 const root = path.resolve(process.env.SITE_ROOT ?? '.');
 const releaseDate = '2026-07-14';
@@ -19,12 +20,122 @@ const pages = [
 ];
 
 const articles = [
-  { file: 'blog/crm-automation-local-business/index.html', published: '2026-07-08', image: '/assets/art/tower.webp' },
-  { file: 'blog/business-process-automation-small-business/index.html', published: '2026-07-04', image: '/assets/art/street.webp' },
-  { file: 'blog/booking-automation-after-hours/index.html', published: '2026-06-30', image: '/assets/art/dawn.webp' },
-  { file: 'blog/review-automation-local-seo/index.html', published: '2026-06-25', image: '/assets/og-v20260714.jpg' },
-  { file: 'blog/software-consulting-vs-in-house/index.html', published: '2026-06-20', image: '/assets/art/tower.webp' },
+  { file: 'blog/crm-automation-local-business/index.html', published: '2026-07-08', modified: '2026-07-21', image: '/assets/art/tower.webp' },
+  { file: 'blog/business-process-automation-small-business/index.html', published: '2026-07-04', modified: '2026-07-21', image: '/assets/art/street.webp' },
+  { file: 'blog/booking-automation-after-hours/index.html', published: '2026-06-30', modified: '2026-07-21', image: '/assets/art/dawn.webp' },
+  { file: 'blog/review-automation-local-seo/index.html', published: '2026-06-25', modified: '2026-07-21', image: '/assets/og-v20260714.jpg' },
+  { file: 'blog/software-consulting-vs-in-house/index.html', published: '2026-06-20', modified: '2026-07-14', image: '/assets/art/tower.webp' },
 ];
+
+const legacySitemapEntries = pages.map((page) => ({ loc: page.canonical, lastmod: releaseDate }));
+const releaseSitemapEntries = [
+  { loc: `${base}/`, lastmod: '2026-07-21' },
+  { loc: `${base}/about/`, lastmod: '2026-07-21' },
+  { loc: `${base}/solutions/lead-recovery-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/solutions/booking-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/solutions/review-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/industries/hvac-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/industries/plumbing-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/industries/electrical-automation/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/crm-automation-local-business/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/business-process-automation-small-business/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/booking-automation-after-hours/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/review-automation-local-seo/`, lastmod: '2026-07-21' },
+  { loc: `${base}/blog/software-consulting-vs-in-house/`, lastmod: '2026-07-14' },
+];
+
+const legacyRobots = `User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://efficientautomate.com/sitemap.xml`;
+const releaseRobots = `User-agent: OAI-SearchBot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: ChatGPT-User
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Claude-SearchBot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Claude-User
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Googlebot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: bingbot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: PerplexityBot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Perplexity-User
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Applebot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: DuckAssistBot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Amzn-SearchBot
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Amzn-User
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: CloudflareBrowserRenderingCrawler
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, use=reference
+Allow: /
+
+Sitemap: https://efficientautomate.com/sitemap.xml`;
 
 const full = (relative) => path.join(root, relative);
 const exists = (relative) => fs.existsSync(full(relative));
@@ -126,7 +237,7 @@ test('articles expose matching visible trust signals and BlogPosting schema', ()
     const html = read(article.file);
     assert.match(html, /<a\s+href="\/about\/"[^>]*>Tarik Kizildere<\/a>/i, `${article.file} author link`);
     assert.match(html, new RegExp(`<time\\s+datetime="${article.published}"`), `${article.file} published time`);
-    assert.match(html, new RegExp(`<time\\s+datetime="${releaseDate}"`), `${article.file} modified time`);
+    assert.match(html, new RegExp(`<time\\s+datetime="${article.modified}"`), `${article.file} modified time`);
     assert.match(html, new RegExp(`<div\\s+class="post-hero">[\\s\\S]*?<img\\s+src="${escapeRegex(article.image)}"`, 'i'), `${article.file} hero`);
     const post = jsonLdNodes(html, article.file).find((node) => hasType(node, 'BlogPosting'));
     assert.ok(post, `${article.file} BlogPosting`);
@@ -134,24 +245,26 @@ test('articles expose matching visible trust signals and BlogPosting schema', ()
       assert.ok(post[property], `${article.file} BlogPosting.${property}`);
     }
     assert.equal(post.datePublished, article.published);
-    assert.equal(post.dateModified, releaseDate);
+    assert.equal(post.dateModified, article.modified);
   }
 });
 
-test('crawler policy explicitly permits search without overriding training policy', () => {
+test('crawler policy matches an exact legacy or release contract', () => {
   const robots = read('robots.txt');
-  assert.match(robots, /^User-agent:\s*OAI-SearchBot\s*\r?\nAllow:\s*\/$/mi);
-  assert.match(robots, /^Sitemap:\s*https:\/\/efficientautomate\.com\/sitemap\.xml$/mi);
-  assert.doesNotMatch(robots, /^User-agent:\s*GPTBot$/mi);
+  const normalizedRobots = robots.replace(/\r\n/g, '\n').trimEnd();
+  assert.ok([legacyRobots, releaseRobots].includes(normalizedRobots), 'robots.txt must match one complete phase contract');
   assert.equal(exists('llms.txt'), false);
   assert.equal(exists('ai.txt'), false);
+  assert.doesNotMatch(robots, /\bai-train\b/i);
 });
 
-test('sitemap lists every canonical exactly once with release lastmod', () => {
+test('sitemap matches an exact legacy or release inventory with unique URLs', () => {
   const sitemap = read('sitemap.xml');
   const entries = [...sitemap.matchAll(/<url>\s*<loc>(.*?)<\/loc>\s*<lastmod>(.*?)<\/lastmod>\s*<\/url>/g)]
     .map((match) => ({ loc: match[1], lastmod: match[2] }));
-  assert.deepEqual(entries.map((entry) => entry.loc).sort(), pages.map((page) => page.canonical).sort());
   assert.equal(new Set(entries.map((entry) => entry.loc)).size, entries.length);
-  assert.ok(entries.every((entry) => entry.lastmod === releaseDate));
+  assert.ok(
+    [legacySitemapEntries, releaseSitemapEntries].some((variant) => isDeepStrictEqual(entries, variant)),
+    'sitemap.xml must match one complete phase inventory',
+  );
 });
