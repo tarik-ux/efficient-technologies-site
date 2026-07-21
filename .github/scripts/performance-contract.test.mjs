@@ -48,6 +48,17 @@ const htmlFiles = [
   'blog/software-consulting-vs-in-house/index.html',
 ];
 
+const expectedSecondaryStylesheetRevisions = {
+  '404.html': '3',
+  'about/index.html': '4',
+  'blog/index.html': '4',
+  'blog/booking-automation-after-hours/index.html': '4',
+  'blog/business-process-automation-small-business/index.html': '4',
+  'blog/crm-automation-local-business/index.html': '4',
+  'blog/review-automation-local-seo/index.html': '4',
+  'blog/software-consulting-vs-in-house/index.html': '4',
+};
+
 const expectedVideos = [
   { logicalId: 'world', output: `assets/video/city-loop-v${release}.mp4`, width: 1920, height: 1080 },
   { logicalId: 'chapter-1-forward', output: `assets/video/t1-v${release}.mp4`, width: 1600, height: 900 },
@@ -117,6 +128,19 @@ const sha256 = (relative) => crypto.createHash('sha256').update(fs.readFileSync(
 const contractFull = (relative) => path.join(contractRoot, relative);
 const contractExists = (relative) => fs.existsSync(contractFull(relative));
 const contractRead = (relative) => fs.readFileSync(contractFull(relative), 'utf8');
+
+function expectedSecondaryStylesheets(file) {
+  const secondaryHtmlFiles = htmlFiles.filter((relative) => relative !== 'index.html');
+  assert.deepEqual(
+    Object.keys(expectedSecondaryStylesheetRevisions).sort(),
+    secondaryHtmlFiles.slice().sort(),
+    'secondary stylesheet revision map covers every non-home HTML file with no extras',
+  );
+  return [
+    `/assets/tokens.css?v=${tokensRevision}`,
+    `/css/styles.css?v=${expectedSecondaryStylesheetRevisions[file]}`,
+  ];
+}
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1538,7 +1562,7 @@ test('homepage embeds only an approved revisioned CSS split while other routes r
       .map((tag) => attr(tag, 'href'));
     assert.deepEqual(
       stylesheets,
-      [`/assets/tokens.css?v=${tokensRevision}`, '/css/styles.css?v=3'],
+      expectedSecondaryStylesheets(file),
       file + ' revised stylesheets',
     );
   }
@@ -1549,7 +1573,7 @@ test('immutable cache policy applies only to release-versioned assets', () => {
     const stylesheets = tags(read(file), 'link')
       .filter((tag) => attr(tag, 'rel') === 'stylesheet')
       .map((tag) => attr(tag, 'href'));
-    assert.deepEqual(stylesheets, [`/assets/tokens.css?v=${tokensRevision}`, '/css/styles.css?v=3'], `${file} revised stylesheets`);
+    assert.deepEqual(stylesheets, expectedSecondaryStylesheets(file), `${file} revised stylesheets`);
   }
   const homeScripts = tags(read('index.html'), 'script').map((tag) => attr(tag, 'src')).filter(Boolean);
   assert.deepEqual(homeScripts, [], 'homepage runtime must remain dynamically scheduled');

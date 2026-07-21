@@ -1351,6 +1351,8 @@ Expected: `STATIC_CHECK_CLUSTER_FAIL` naming unsupported phrases and missing sol
 
 In all seven files in this task, change `/css/styles.css?v=3` to `/css/styles.css?v=4`.
 
+> **Controller-correction note:** `about/index.html`, `blog/index.html`, and the five Task 6 articles use `/css/styles.css?v=4`; `404.html` is outside Task 6 and remains `/css/styles.css?v=3`.
+
 Replace each current secondary-page navigation with this exact block:
 
 ```html
