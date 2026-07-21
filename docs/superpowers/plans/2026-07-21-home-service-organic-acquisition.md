@@ -1863,7 +1863,7 @@ If and only if `index.html` is still at or above 63,436 bytes, remove CSS commen
 
 ```powershell
 $env:ET_PLAN_ROOT = (Get-Location).Path
-node -e "const fs=require('fs'),p=require('path').join(process.env.ET_PLAN_ROOT,'index.html');let s=fs.readFileSync(p,'utf8');const re=/(<style data-homepage-styles[^>]*>)([\s\S]*?)(<\/style>)/;if(!re.test(s))throw Error('homepage style block missing');s=s.replace(re,(_,a,css,b)=>a+css.replace(/\/\*[\s\S]*?\*\//g,'')+b);fs.writeFileSync(p,s);"
+node -e "const fs=require('fs'),p=require('path').join(process.env.ET_PLAN_ROOT,'index.html');let s=fs.readFileSync(p,'utf8');const re=/(<style data-homepage-styles[^>]*>)([\s\S]*?)(<\/style>)/;if(!re.test(s))throw Error('homepage style block missing');s=s.replace(re,(_,a,css,b)=>a+css.replace(/\/\*[\s\S]*?\*\//g,'').replace(/[ \t]+$/gm,'')+b);fs.writeFileSync(p,s);"
 ```
 
 Then immediately run the integrity validator and visually compare the homepage. If any protected hash, computed style, layout, animation, or screenshot changes, restore only this bounded edit with `apply_patch` and stop; do not pursue a visual or motion optimization to satisfy the byte gate.
