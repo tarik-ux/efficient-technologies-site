@@ -961,6 +961,8 @@ Expected: one commit containing exactly the three industry routes.
 - Preserves: every `<video>` element and attribute, `#preloader`, `#cursor`, `#cursor-ring`, `#hero`, `#core`, `#gaps`, `#how`, `#book`, every `data-*` motion hook, and both protected inline scripts byte-for-byte.
 - Produces: the nationwide home-service positioning, route navigation, flagship Lead Recovery path, three-trade section, truthful founding-client offer, exact pricing/guarantee contract, visible FAQ, and attributed audit booking path.
 
+**Controller correction — approved stylesheet split:** `css/styles.css` intentionally retains its one commercial-route block for secondary pages. The homepage contract therefore pins the full shared stylesheet hash but embeds only `assets/tokens.css`, the shared CSS before `/* ---- commercial solution and industry pages ---- */`, and the exact Step 3 acquisition block. Its performance test accepts only this Task 5 form or the Task 8 form with the bounded homepage-only `/* ---- blog ---- */` region removed.
+
 - [ ] **Step 1: Prove the homepage contract is not yet satisfied**
 
 Run:

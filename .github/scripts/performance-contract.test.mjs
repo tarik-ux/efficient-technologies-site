@@ -15,8 +15,26 @@ const socialImage = `/assets/og-v${release}.jpg`;
 const manifestPath = '.github/performance/media-manifest.json';
 const expectedCssSha256 = {
   'assets/tokens.css': '5fa72341c7d984b3b63be2c9b2997a4a257f268e2a464c9f534a8446e0c39c88',
-  'css/styles.css': '79ebe674c1ca170fc8f9eca873fdba8b8767b9cf0e9e2a5d480f292cf04e2ae2',
+  'css/styles.css': 'd26dcb6cb8d02ca9af4070e563d52a4be35cc12ea9f1e4bbbf0efffa7e67b8e7',
 };
+
+const homepageAcquisitionCss = `/* ---- home-service acquisition additions ---- */
+.svc-link{display:block;color:inherit;text-decoration:none;}
+.svc-link:focus-visible,.industry-link:focus-visible{outline:2px solid var(--et-blue);outline-offset:2px;}
+.industry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--et-space-4);margin-top:var(--et-space-6);}
+.industry-link{display:block;background:var(--et-panel);border:1px solid var(--et-line);border-radius:var(--et-radius-lg);padding:var(--et-space-5);color:var(--et-white);text-decoration:none;}
+.industry-link:hover{border-color:var(--et-line-strong);}
+.industry-link p{color:var(--et-slate);font-size:var(--et-fs-sm);margin:var(--et-space-2) 0 0;}
+.founding-callout{margin-top:var(--et-space-6);padding:var(--et-space-5);background:var(--et-panel);border-left:2px solid var(--et-lime);}
+.founding-callout h3{margin:0 0 var(--et-space-2);font-size:var(--et-fs-h3);}
+.founding-callout p{margin:0;color:var(--et-slate);}
+.guarantee-detail{max-width:72ch;margin:var(--et-space-3) auto 0;text-align:center;color:var(--et-slate);font-size:var(--et-fs-sm);}
+.home-faq{display:grid;gap:var(--et-space-3);max-width:920px;margin:var(--et-space-6) auto 0;}
+.home-faq details{background:var(--et-panel);border:1px solid var(--et-line);border-radius:var(--et-radius-lg);padding:var(--et-space-4) var(--et-space-5);}
+.home-faq summary{cursor:pointer;font-family:var(--et-font-display);font-weight:700;color:var(--et-white);}
+.home-faq p{color:var(--et-slate);margin:var(--et-space-3) 0 0;}
+@media(max-width:720px){.industry-grid{grid-template-columns:1fr;}}
+`;
 
 const htmlFiles = [
   'index.html',
@@ -1454,7 +1472,7 @@ test('runtime scheduling changes preserve motion constants', () => {
   assert.match(main, /duration: 0\.9, stagger: 0\.09, ease: 'power3\.out'/);
 });
 
-test('homepage embeds exact revisioned CSS while other routes retain linked styles', () => {
+test('homepage embeds only an approved revisioned CSS split while other routes retain linked styles', () => {
   const home = read('index.html');
   const markedStyles = tags(home, 'style')
     .filter((tag) => /\bdata-homepage-styles\b/i.test(tag));
@@ -1472,14 +1490,38 @@ test('homepage embeds exact revisioned CSS while other routes retain linked styl
   assert.equal(wrapped.startsWith('\n'), true, 'inline style opening structural newline');
   assert.equal(wrapped.endsWith('\n'), true, 'inline style closing structural newline');
   const embedded = wrapped.slice(1, -1);
-  const expected =
-    normalizeLf(read('assets/tokens.css')) +
-    '\n' +
-    normalizeLf(read('css/styles.css'));
+  const tokens = normalizeLf(read('assets/tokens.css'));
+  const sharedStyles = normalizeLf(read('css/styles.css'));
+  const commercialMarker = '/* ---- commercial solution and industry pages ---- */';
+  const blogMarker = '/* ---- blog ---- */';
+  const recentWorkMarker = '/* ---- recent work ---- */';
+  const commercialIndex = sharedStyles.indexOf(commercialMarker);
+  assert.notEqual(commercialIndex, -1, 'shared stylesheet commercial marker');
   assert.equal(
-    embedded,
-    expected,
-    'homepage embedded CSS must equal the two source files exactly',
+    sharedStyles.split(commercialMarker).length - 1,
+    1,
+    'shared stylesheet commercial marker count',
+  );
+  const sharedHomepageCss = sharedStyles.slice(0, commercialIndex);
+  assert.equal(sharedHomepageCss.includes(commercialMarker), false, 'commercial CSS excluded from homepage shared variant');
+  assert.equal(embedded.startsWith(tokens + '\n'), true, 'homepage tokens remain the exact normalized prefix');
+  assert.equal(embedded.includes(commercialMarker), false, 'commercial CSS must not enter homepage embedded variants');
+
+  const task5Embedded = tokens + '\n' + sharedHomepageCss + homepageAcquisitionCss;
+  const blogIndex = sharedHomepageCss.indexOf(blogMarker);
+  const recentWorkIndex = sharedHomepageCss.indexOf(recentWorkMarker);
+  assert.notEqual(blogIndex, -1, 'homepage shared CSS blog marker');
+  assert.notEqual(recentWorkIndex, -1, 'homepage shared CSS recent-work marker');
+  assert.ok(blogIndex < recentWorkIndex, 'homepage blog region precedes recent-work CSS');
+  const task8Embedded =
+    tokens +
+    '\n' +
+    sharedHomepageCss.slice(0, blogIndex) +
+    sharedHomepageCss.slice(recentWorkIndex) +
+    homepageAcquisitionCss;
+  assert.ok(
+    [task5Embedded, task8Embedded].includes(embedded),
+    'homepage embedded CSS must equal one approved tokens/shared/acquisition variant exactly',
   );
 
   for (const [relative, expectedHash] of Object.entries(expectedCssSha256)) {
