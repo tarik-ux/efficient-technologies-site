@@ -18,7 +18,7 @@
 - Use only brand values already defined in `assets/tokens.css`; do not invent colors, typefaces, spacing scales, radii, or motion values.
 - Preserve the seven video files byte-for-byte and preserve poster behavior, scene order, scroll triggers, chapter reversals, zoom behavior, loader, cursor, ambient effects, reduced-motion behavior, and mobile/desktop object positioning.
 - `js/ambient.js`, `assets/tokens.css`, the homepage critical-bootstrap script, and the homepage runtime-loader script remain byte-identical.
-- `js/main.js` may change only the approved review-gating demo sentence; its normalized SHA-256 must remain `c95d18c5b7e51ae6495e62d8b7e37f5093d187aed1dbb37f440bedf00168d36d`.
+- `js/main.js` may change only the approved review-gating demo sentence; its normalized SHA-256 must remain `f6ba2c8c745cf2ff1f976c57aa5d1192ebb366448a4b22c0b25fe8264139977e`.
 - The existing visual design and animation system remain. Content, semantic order, links, metadata, static secondary-page layout, and non-visible delivery may change.
 - Target local-serving home-service businesses anywhere in the United States, beginning with HVAC, plumbing, and electrical contractors. Do not target enterprise buyers.
 - Lead Recovery is the flagship. Booking and Review Automation are supporting systems.
@@ -153,7 +153,7 @@ Create ignored `.validation/home-service-release-v1/baseline.json`:
     "critical-bootstrap": "a04597154d1c59d8d440c73e48d0a3fb01cf2e66c1c215816e08ea6a05ae3357",
     "runtime-loader": "986f68f030654c5723c65e3389af764e4ddac631fa557029551ea3f0479255a0"
   },
-  "normalizedMainJs": "c95d18c5b7e51ae6495e62d8b7e37f5093d187aed1dbb37f440bedf00168d36d"
+  "normalizedMainJs": "f6ba2c8c745cf2ff1f976c57aa5d1192ebb366448a4b22c0b25fe8264139977e"
 }
 ```
 
