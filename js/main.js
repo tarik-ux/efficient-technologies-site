@@ -168,7 +168,7 @@
       { t: '✓ no-show → rebooking flow', c: 'ok', k: 0 },
       { t: '$ et run --booking --followup --reviews', c: 'dim', k: null },
       { t: '✓ appointment booked — no staff touch', c: 'ok', k: 0 },
-      { t: 'negative review caught → routed private', c: 'w', k: null },
+      { t: 'customer feedback → human follow-up', c: 'w', k: null },
       { t: '✓ CRM updated automatically', c: 'ok', k: 3 }
     ];
     var opsCount = [0, 0, 0, 0], oi = 0;
